@@ -1,0 +1,27 @@
+/*
+ * Adapted from React Bits (reactbits.dev) — CursorGrid.
+ * Upstream renders only a canvas that fills its parent and listens for
+ * pointer events on its own container. Here it also accepts children and
+ * renders them above the canvas, so pointer events over the cards bubble up
+ * to the grid container — otherwise the cards would sit on top and the grid
+ * would never see the cursor.
+ */
+.cursor-grid {
+  position: relative;
+  width: 100%;
+}
+
+.cursor-grid__canvas {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.cursor-grid__content {
+  position: relative;
+  z-index: 1;
+}
