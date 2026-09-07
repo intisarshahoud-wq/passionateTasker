@@ -14,9 +14,11 @@ import { useEffect, useRef, useState } from "react";
 export function HeroVideo({
   src = "/hero.mp4",
   poster = "/hero-poster.jpg",
+  fallback,
 }: {
   src?: string;
   poster?: string;
+  fallback?: React.ReactNode;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
@@ -45,56 +47,47 @@ export function HeroVideo({
     }
   }
 
+  // No usable video: render the mock instead of an empty frame.
+  if (failed) return <>{fallback}</>;
+
   return (
-    <div className="hero-video" id="heroMedia">
-      {!failed && (
-        <video
-          ref={videoRef}
-          className="hero-video__el"
-          src={src}
-          poster={poster}
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          onError={() => setFailed(true)}
-          aria-label="Passionate Taskers overview"
-        />
-      )}
+    <div className="hero-video">
+      <video
+        ref={videoRef}
+        className="hero-video__el"
+        src={src}
+        poster={poster}
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        onError={() => setFailed(true)}
+        aria-label="Passionate Taskers overview"
+      />
 
-      {failed && (
-        <div className="hero-video__fallback">
-          <p>
-            Add your video at <code>/public/hero.mp4</code> to show it here.
-          </p>
-        </div>
-      )}
-
-      {!failed && (
-        <button
-          type="button"
-          className="hero-video__toggle"
-          onClick={toggle}
-          aria-pressed={playing}
-        >
-          {playing ? (
-            <>
-              <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-                <rect x="7" y="5" width="4" height="14" rx="1" />
-                <rect x="13" y="5" width="4" height="14" rx="1" />
-              </svg>
-              Pause
-            </>
-          ) : (
-            <>
-              <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-                <path d="M8 5.5v13l11-6.5z" />
-              </svg>
-              Play
-            </>
-          )}
-        </button>
-      )}
+      <button
+        type="button"
+        className="hero-video__toggle"
+        onClick={toggle}
+        aria-pressed={playing}
+      >
+        {playing ? (
+          <>
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+              <rect x="7" y="5" width="4" height="14" rx="1" />
+              <rect x="13" y="5" width="4" height="14" rx="1" />
+            </svg>
+            Pause
+          </>
+        ) : (
+          <>
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+              <path d="M8 5.5v13l11-6.5z" />
+            </svg>
+            Play
+          </>
+        )}
+      </button>
     </div>
   );
 }
