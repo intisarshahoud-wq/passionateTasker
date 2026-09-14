@@ -56,10 +56,9 @@ Sections on the page, in order:
 
 1. **Header** — brand, five-item nav, the two accessibility toggles (larger
    text, light/dark), waitlist CTA, and a hamburger menu below 860px
-2. **Hero** — a playlist of trade clips (plumber, electrician,
-   handyman) that crossfade and loop over a still frame. A thin overlay
-   keeps the video clearly visible, and the text sits on a soft blurred plate so
-   it stays readable over any frame; animated headline, the task search, quick category chips and a
+2. **Hero** — the message and search on the left, and on the right a
+   framed playlist of trade clips (plumber, electrician, home repairs) that
+   crossfade and loop, shown clear with no overlay; animated headline, the task search, quick category chips and a
    four-item trust strip. The video autoplays muted for every visitor, including reduced-motion
    setups (Intisar's decision, 2026-09-14), always has a labelled pause control
    (WCAG 2.2.2), and remembers a pause so it never autoplays on that visitor again
@@ -164,8 +163,8 @@ in hard hat and hi-vis; 1280x720, 2.5 MB). Only the clip on screen and the next
 one are downloaded, and a browser that asks to save data gets the first clip
 only. `public/videos/plumber-poster.jpg` is a frame of the first clip (at 5.2 s)
 and is the still under the videos. All committed so the demo works offline. To
-add or swap a clip, edit `CLIPS` in `HeroMedia.tsx`, then re-run the hero
-contrast check: the scrim was tuned against these exact clips. Placeholder photography comes from Unsplash, referenced by photo id in the
+add or swap a clip, edit `CLIPS` in `HeroMedia.tsx`, and pick clips with the action near the centre:
+the frame crops them to 5:4 on wide screens. Placeholder photography comes from Unsplash, referenced by photo id in the
 `UNSPLASH` and `PORTRAITS` maps in `src/data/marketplace.ts` and turned into URLs
 by `unsplashUrl()`. `next.config.ts` allows `images.unsplash.com` under
 `images.remotePatterns` so `next/image` can optimise them.

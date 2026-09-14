@@ -8,14 +8,13 @@ import Image from "next/image";
  * the next, and after the last it starts again from the first.
  *
  * All are free-licence Pexels clips, landscape, 1920x1080, H.264, silent, and
- * short (about 10 to 20 seconds). The scrim in hero.css was tuned by measuring
- * text contrast over these exact clips, so re-run that check whenever one is
- * added or swapped.
+ * short (about 10 to 20 seconds). The frame crops them to 5:4 on wide screens
+ * and 16:10 on narrow ones, so pick clips with the action near the centre.
  */
 const CLIPS = [
   { src: "/videos/plumber.mp4", trade: "Plumbing" },
   { src: "/videos/electrician.mp4", trade: "Electrical" },
-  { src: "/videos/handyman.mp4", trade: "Handyman" },
+  { src: "/videos/handyman.mp4", trade: "Home repairs" },
 ] as const;
 
 /** The still shown before the first clip plays, and whenever none can. */
@@ -53,7 +52,8 @@ function prefersSavingData(): boolean {
 }
 
 /**
- * The hero backdrop: a still frame with a playlist of trade clips over it.
+ * The hero footage: a framed player beside the hero text, playing a playlist
+ * of trade clips over a still frame, with a label naming the trade on screen.
  *
  * How it works: two <video> elements take turns. One is on screen; the other
  * quietly loads the next clip once the current one is playing, so each clip is
@@ -258,12 +258,20 @@ export function HeroMedia() {
     const clip = slotClip[slot];
     return clip === null ? undefined : CLIPS[clip].src;
   };
+  const shownClip = slotClip[active] ?? 0;
   const classOf = (slot: Slot) =>
     `hero-media__video${slot === active && ready[slot] ? " is-visible" : ""}`;
 
   return (
     <div className="hero-media">
-      <Image src={POSTER} alt="" fill priority sizes="100vw" className="hero-media__img" />
+      <Image
+        src={POSTER}
+        alt=""
+        fill
+        priority
+        sizes="(max-width: 1024px) 100vw, 50vw"
+        className="hero-media__img"
+      />
 
       {/* Both slots are always in the DOM so the effect can wire them once.
           The waiting slot has no source until its clip is queued, then loads
@@ -294,7 +302,12 @@ export function HeroMedia() {
         </>
       )}
 
-      <span className="hero-media__scrim" />
+      {/* Which trade is on screen. Solid background, so it stays readable over
+          any frame; hidden from screen readers like the footage itself. */}
+      <span className="hero-media__label" aria-hidden="true">
+        <span className="hero-media__label-dot" />
+        {CLIPS[shownClip].trade}
+      </span>
 
       {!failed && (
         <button

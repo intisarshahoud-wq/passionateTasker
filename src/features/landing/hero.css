@@ -1,20 +1,77 @@
 /*
- * Hero: background photo and video, scrim, layout.
+ * Hero: split layout, the video frame, and the hero text.
  *
  * Tokens only, no raw hex values: any new colour must be a token from
  * globals.css or a color-mix of one, so the light/dark toggle keeps working.
  * Imported by app/globals.css, whose import order is the cascade order.
  */
 
-/* ---- Hero ---- */
+/* ---- Hero layout: message and search on the left, footage on the right ---- */
 
-.hero-media { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+/*
+ * Side by side, not layered (changed 2026-09-14). The text sits on the plain
+ * page background, so its contrast is the ordinary token contrast and never
+ * depends on the footage. The video is shown clear and in full, with no scrim,
+ * blur or tint over it.
+ *
+ * Selectors are one step more specific than usual because the older hero rules
+ * in globals.css load after this file.
+ */
+section.hero {
+  padding: 60px 0 56px;
+  /* A soft copper glow, painted as a still background instead of the old
+     drifting blurred shapes: nothing moves behind the text, and nothing sits
+     there that an automated contrast check cannot read. */
+  background:
+    radial-gradient(60% 55% at 0% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%),
+    radial-gradient(50% 60% at 100% 100%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%);
+}
+.hero .wrap { max-width: 1320px; }
+
+.hero-split {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  /* The footage gets the larger share: seeing it is the point. */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 56px;
+  align-items: center;
+}
+@media (max-width: 1024px) {
+  .hero-split { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+}
+
+.hero-copy,
+.hero-visual { min-width: 0; }
+
+/* The search and chips were sized for a centred hero; in the column they
+   start at the left edge and use the full width. */
+.hero-copy .task-search { margin: 0; max-width: none; }
+.hero-copy .hero-chips ul { justify-content: flex-start; }
+
+.hero .trust-strip { position: relative; z-index: 1; margin-top: 48px; }
+
+/* ---- Video frame ---- */
+
+.hero-media {
+  position: relative;
+  aspect-ratio: 5 / 4;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: var(--surface-2);
+  box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+@media (max-width: 1024px) {
+  .hero-media { aspect-ratio: 16 / 10; border-radius: 22px; }
+}
+
 .hero-media__img { object-fit: cover; }
 
-/* Two video elements take turns over the still (see HeroMedia). Only the
-   one on screen carries .is-visible, so swapping the class crossfades them,
-   and a clip fades in only once it can actually play, so a slow connection
-   shows the still rather than a black hole. */
+/* Two video elements take turns (see HeroMedia). Only the one on screen has
+   .is-visible, so swapping the class crossfades them; a clip fades in only
+   once it can actually play, so a slow connection shows the still instead of
+   a black box. */
 .hero-media__video {
   position: absolute;
   inset: 0;
@@ -26,142 +83,75 @@
 }
 .hero-media__video.is-visible { opacity: 1; }
 
-/*
- * Scrim and text plate.
- *
- * Reworked on 2026-09-14 so the video is clearly visible. The full-frame scrim
- * is now thin: nearly clear at the top and sides, solid only at the very bottom
- * where the section joins the page. The text is kept readable by a separate
- * plate behind the hero text block (.hero-inner::before, below): a tint plus a
- * backdrop blur, feathered at the edges so it reads as a soft haze rather than
- * a box. Blurring evens out bright details in the footage, so the plate needs
- * far less darkness than a flat overlay would for the same contrast.
- *
- * Chosen by measurement: the text colour was checked against every pixel
- * behind the text's line boxes, over frames from every clip in the playlist
- * (plumber, electrician, handyman), at 1440 px and 390 px, in both themes.
- * Worst frames: headline 5.5:1, copper line 3.7:1 (needs 3:1, large text),
- * lede 4.7:1 (needs 4.5:1). Adding or swapping a clip, or lightening any of
- * this, means measuring again.
- */
-.hero-media__scrim {
+/* Which trade is on screen. Solid, so it reads over any frame. */
+.hero-media__label {
   position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg,
-      transparent 0%,
-      color-mix(in srgb, var(--bg) 12%, transparent) 40%,
-      color-mix(in srgb, var(--bg) 42%, transparent) 80%,
-      var(--bg) 100%),
-    radial-gradient(66% 58% at 50% 46%,
-      color-mix(in srgb, var(--bg) 30%, transparent) 0%,
-      color-mix(in srgb, var(--bg) 15%, transparent) 55%,
-      transparent 100%);
+  top: 16px;
+  left: 16px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 600;
 }
-
-@media (max-width: 620px) {
-  .hero-media__scrim {
-    background:
-      linear-gradient(180deg,
-        color-mix(in srgb, var(--bg) 8%, transparent) 0%,
-        color-mix(in srgb, var(--bg) 30%, transparent) 30%,
-        color-mix(in srgb, var(--bg) 55%, transparent) 70%,
-        var(--bg) 100%),
-      radial-gradient(90% 60% at 50% 42%,
-        color-mix(in srgb, var(--bg) 40%, transparent) 0%,
-        color-mix(in srgb, var(--bg) 25%, transparent) 60%,
-        transparent 100%);
-  }
-}
-
-/* The text plate. Sits behind the hero text, inside .hero-inner's stacking
-   context, so it is above the video and below the words. The mask colour is
-   irrelevant: only its alpha is used, fading the plate out at the edges. */
-.hero-inner::before {
-  content: "";
-  position: absolute;
-  inset: -48px -72px;
-  z-index: -1;
-  pointer-events: none;
-  background: color-mix(in srgb, var(--bg) 66%, transparent);
-  -webkit-backdrop-filter: blur(18px);
-  backdrop-filter: blur(18px);
-  -webkit-mask-image: radial-gradient(closest-side, var(--bg) 80%, transparent 100%);
-  mask-image: radial-gradient(closest-side, var(--bg) 80%, transparent 100%);
-}
-
-/* No blur available, or the visitor asked for less transparency: the plate
-   does the contrast work with tint alone, so it gets more of it. */
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .hero-inner::before { background: color-mix(in srgb, var(--bg) 82%, transparent); }
-}
-@media (prefers-reduced-transparency: reduce) {
-  .hero-inner::before { background: color-mix(in srgb, var(--bg) 88%, transparent); }
-}
-
-html[data-mode="light"] .hero-media__img { opacity: 0.5; }
-html[data-mode="light"] .hero-media__video.is-visible { opacity: 0.5; }
+.hero-media__label-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
 
 .hero-media__toggle {
   position: absolute;
-  right: 18px;
-  bottom: 18px;
+  right: 16px;
+  bottom: 16px;
   z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 8px 14px;
-  border-radius: 999px;
-  cursor: pointer;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: var(--ink);
-  background: color-mix(in srgb, var(--bg) 76%, transparent);
-  backdrop-filter: blur(8px);
+  min-height: 40px;
+  padding: 0 14px;
   border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  cursor: pointer;
   transition: border-color 220ms var(--ease), color 220ms var(--ease);
 }
 .hero-media__toggle:hover { border-color: var(--accent); color: var(--accent-text); }
+.hero-media__toggle:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .hero-media__toggle svg { width: 12px; height: 12px; }
 @media (max-width: 620px) {
-  .hero-media__toggle { right: 12px; bottom: 12px; font-size: 0.66rem; padding: 7px 11px; }
+  .hero-media__label { top: 12px; left: 12px; font-size: 0.8rem; }
+  .hero-media__toggle { right: 12px; bottom: 12px; font-size: 0.68rem; }
 }
 
-.hero-inner {
-  position: relative;
-  z-index: 1;
-  max-width: 900px;
-  text-align: center;
-}
+/* ---- Text ---- */
 
-.hero-title {
-  font-size: clamp(2.3rem, 5.4vw, 4rem);
-  line-height: 1.04;
+.hero .hero-title {
+  font-size: clamp(2.2rem, 3.9vw, 3.4rem);
+  line-height: 1.05;
+  /* Even line lengths, so no word is left stranded on a line of its own. */
+  text-wrap: balance;
   letter-spacing: -0.028em;
   margin-bottom: 20px;
 }
 .hero-title__accent { color: var(--accent-text); }
 
-/* A soft halo in the page background colour behind the hero text. The scrim
-   does the real contrast work; this only stops a bright moving detail in the
-   footage from cutting into a letter's edge. Uses --bg, so it becomes a cream
-   halo behind dark text in light mode. */
-.hero-title,
 .hero-lede {
-  text-shadow: 0 1px 14px color-mix(in srgb, var(--bg) 75%, transparent);
-}
-
-.hero-lede {
-  font-size: clamp(1.02rem, 1.5vw, 1.18rem);
+  font-size: clamp(1.02rem, 1.4vw, 1.16rem);
   color: var(--ink-soft);
-  max-width: 56ch;
-  margin: 0 auto 34px;
+  max-width: 52ch;
+  margin: 0 0 30px;
+  text-wrap: pretty;
   line-height: 1.55;
 }
 
 .hero .eyebrow { margin-bottom: 20px; }
 @media (max-width: 520px) {
   .hero .eyebrow { font-size: 0.68rem; padding: 6px 10px; }
-  .hero { padding-top: 52px; }
+  section.hero { padding-top: 40px; }
 }
-
