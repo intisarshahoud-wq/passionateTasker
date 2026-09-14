@@ -1,0 +1,40 @@
+/*
+ * Shared utilities: visually-hidden, section anchors, section notes.
+ *
+ * Tokens only, no raw hex values: any new colour must be a token from
+ * globals.css or a color-mix of one, so the light/dark toggle keeps working.
+ * Imported by app/globals.css, whose import order is the cascade order.
+ */
+
+/* ---- Utilities ---- */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The header is sticky, so an anchor jump would otherwise land with the
+   section heading hidden underneath it. */
+section[id] { scroll-margin-top: 92px; }
+#top { scroll-margin-top: 0; }
+
+.section-head--center {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+.section-note {
+  margin: 28px 0 0;
+  font-size: 0.85rem;
+  color: var(--ink-faint);
+  max-width: 68ch;
+}
+

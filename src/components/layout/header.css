@@ -1,0 +1,84 @@
+/*
+ * Site header: brand, nav, accessibility toggles, menu.
+ *
+ * Tokens only, no raw hex values: any new colour must be a token from
+ * globals.css or a color-mix of one, so the light/dark toggle keeps working.
+ * Imported by app/globals.css, whose import order is the cascade order.
+ */
+
+/* ---- Header additions ---- */
+
+/* The logo must never wrap — a two-line brand in a sticky bar eats the header. */
+.site-inner .logo { white-space: nowrap; }
+
+/* Below this the bar cannot hold labelled controls as well as the brand, so
+   the toggles and the menu go icon-only. Each keeps an aria-label, so nothing
+   is lost for a screen reader — only the visible text is dropped. */
+@media (max-width: 620px) {
+  .site-inner { gap: 8px; padding: 14px 16px; }
+  .site-inner .logo { font-size: 0.92rem; }
+  .a11y-btn__short { display: none; }
+  .a11y-btn { padding: 8px; }
+  .menu-btn__label { display: none; }
+  .menu-btn { padding: 8px; }
+}
+
+/* On the narrowest phones the wordmark is what has to give — the mark alone
+   still identifies the site, and the controls must stay reachable. font-size:0
+   rather than display:none so the link keeps its accessible name. */
+@media (max-width: 380px) {
+  .site-inner { gap: 6px; padding: 12px 12px; }
+  .site-inner .logo { font-size: 0; gap: 0; }
+  .site-inner .logo svg { width: 28px; height: 28px; }
+}
+
+.site-inner .header-cta { display: none; }
+@media (min-width: 720px) { .site-inner .header-cta { display: inline-flex; } }
+
+.a11y-btn__short { display: none; }
+@media (max-width: 1080px) {
+  .a11y-btn__label { display: none; }
+  .a11y-btn__short { display: inline; }
+  /* The mode button has no short form, so it keeps its icon alone. */
+}
+
+.menu-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  cursor: pointer;
+}
+.menu-btn svg { width: 18px; height: 18px; }
+.menu-btn:hover { border-color: var(--accent); color: var(--accent-text); }
+@media (min-width: 860px) { .menu-btn { display: none; } }
+
+.mobile-menu {
+  border-top: 1px solid var(--line);
+  padding: 16px 24px 22px;
+  background: var(--bg);
+}
+.mobile-menu nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 14px;
+}
+.mobile-menu nav a {
+  padding: 12px 4px;
+  font-size: 1rem;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+}
+.mobile-menu nav a:hover { color: var(--accent-text); }
+.mobile-menu .btn { width: 100%; }
+@media (min-width: 860px) { .mobile-menu { display: none; } }
+

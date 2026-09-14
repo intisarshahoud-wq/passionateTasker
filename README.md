@@ -64,7 +64,7 @@ labelled as simulated; no Google API is contacted and it never asks for a Google
 password.
 
 It exists so the signed-in screens can be designed and reviewed. Replace
-`src/lib/auth.ts` with real authentication before this goes anywhere public —
+`src/features/auth/demo-auth.ts` with real authentication before this goes anywhere public —
 the exported functions (`register`, `signIn`, `signOut`, `useSession`) are the
 seam to keep.
 
@@ -77,22 +77,28 @@ launched and there are no real reviews to show.
 
 ```
 src/
-  app/
-    page.tsx           landing page composition
+  app/                 routes only
     layout.tsx         fonts, metadata, pre-paint theme script
-    globals.css        design tokens (Craft Premium) + base styles
-    marketplace.css    landing-page section styles
-    auth.css           account, registration and dialog styles
-  components/site/     one component per section, plus shared pieces
-  lib/
-    marketplace.ts     mock data, shaped like a future API response
-    auth.ts            demo account store
-    display-prefs.ts   theme and text-size store
+    globals.css        design tokens (Craft Premium), base styles, stylesheet order
+    (marketing)/       public pages: shared layout + the landing page
+  features/            one folder per product area, with its own styles
+    landing/           landing page sections
+    job-post/          task search and sentence-to-job-post logic
+    assistant/         chat assistant
+    services/          service browser and category pages
+    booking/           the four-step booking flow
+    auth/              demo account store and sign-in dialog
+  components/          shared pieces: ui/, motion/, effects/, layout/
+  lib/                 browser helpers: display preferences, speech
+  data/                mock data, shaped like a future API response
+  styles/              site-wide utility classes
 public/
-  hero.mp4             hero background footage
+  videos/              hero clips: plumber, electrician, handyman
 ```
 
-Full background, decisions and rationale live in `PROJECT-CONTEXT.md`.
+The rules that keep this tidy (server components by default, which folder may
+import which) are in section 12 of `PROJECT-CONTEXT.md`, along with the full
+background, decisions and rationale.
 
 ---
 

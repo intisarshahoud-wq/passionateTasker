@@ -1,0 +1,472 @@
+/*
+ * Chat assistant styles.
+ *
+ * Same rule as every stylesheet here: tokens only, no raw hex, so light mode and the
+ * larger-text setting keep working. Sizes are in rem for the same reason — the
+ * whole panel grows with the page's text scale and with browser zoom.
+ *
+ * Hit targets here are deliberately generous (44px floor, 56px on the
+ * launcher). This is the control an unsteady hand and a 200%-zoomed screen have
+ * to find first.
+ */
+
+/* ---- Launcher ---- */
+
+.assistant-launcher {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 0 22px;
+  border: 1px solid color-mix(in oklab, var(--accent) 55%, var(--line));
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-ink-on-accent);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 12px 32px color-mix(in oklab, var(--bg) 65%, transparent);
+  transition: transform 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.assistant-launcher:hover {
+  background: color-mix(in oklab, var(--accent) 88%, var(--ink));
+}
+
+.assistant-launcher:active { transform: translateY(1px); }
+
+.assistant-launcher:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.assistant-launcher__icon { width: 22px; height: 22px; }
+
+/* Below this the bar of text would crowd the page on a phone, but the icon
+   alone still needs its label for a screen reader — so the label is hidden
+   visually, never removed. */
+@media (max-width: 520px) {
+  .assistant-launcher { padding: 0; width: 56px; justify-content: center; }
+  .assistant-launcher__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* ---- Panel ---- */
+
+/*
+ * Docked, not modal. There is no overlay and nothing covers the page: the
+ * assistant sits in the corner while the rest of the site stays scrollable,
+ * clickable and keyboard-reachable behind it. Anyone who needs the chat to
+ * understand the page needs the page at the same time.
+ */
+.assistant-panel {
+  position: fixed;
+  right: max(16px, env(safe-area-inset-right));
+  /* Clear of the launcher, which stays visible and becomes the hide button. */
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + 68px);
+  z-index: 65;
+  width: min(26rem, calc(100vw - 32px));
+  max-height: min(34rem, calc(100dvh - 140px));
+  /*
+   * Column, not row. The panel's height is auto but clamped by max-height, and
+   * a stretched row item is sized against the unclamped height — so the
+   * conversation grew straight past the bottom of the panel and was clipped by
+   * `overflow: hidden` instead of scrolling. As a column with the child on
+   * `flex: 1; min-height: 0`, the transcript is the part that gives.
+   */
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: 0 24px 64px color-mix(in oklab, var(--bg) 78%, transparent);
+  overflow: hidden;
+}
+
+.assistant {
+  display: flex;
+  flex-direction: column;
+  /* min-height: 0 at every level of the chain, or the scrolling child cannot
+     shrink below its content and nothing scrolls. */
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+.assistant__head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.assistant__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.assistant__sub {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+
+.assistant__head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.assistant__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 10px;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--ink-soft);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.assistant__icon-btn svg { width: 18px; height: 18px; }
+
+.assistant__icon-btn.is-on {
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+.assistant__icon-btn:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (max-width: 420px) {
+  .assistant__icon-btn-label { display: none; }
+}
+
+/* ---- Transcript ---- */
+
+.assistant__log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  /* Reaching the end of the transcript must not start scrolling the page
+     behind it — the page is live while the panel is open. */
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.assistant__turn { max-width: 100%; }
+
+.assistant__who {
+  margin: 0 0 6px;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.assistant__turn--mine { text-align: right; }
+
+.assistant__bubble {
+  display: inline-block;
+  text-align: left;
+  max-width: 92%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.assistant__bubble p { margin: 0; }
+
+/* The lead sentence carries the answer on its own, so it is set slightly
+   heavier than the points that expand on it. */
+.assistant__lead { font-weight: 600; }
+
+.assistant__points {
+  margin: 8px 0 0;
+  padding-left: 1.1em;
+  display: grid;
+  gap: 6px;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+.assistant__points li { line-height: 1.5; }
+
+.assistant__turn--mine .assistant__bubble {
+  border-color: color-mix(in oklab, var(--accent) 45%, var(--line));
+  background: color-mix(in oklab, var(--accent) 14%, var(--surface));
+}
+
+.assistant__job {
+  margin: 12px 0 0;
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.assistant__job > div {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.assistant__job dt {
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.assistant__job dd {
+  margin: 0;
+  font-weight: 600;
+  color: var(--ink);
+  text-align: right;
+}
+
+.assistant__link {
+  display: inline-block;
+  margin-top: 12px;
+  min-height: 44px;
+  line-height: 44px;
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.assistant__link:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.assistant__chips {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.assistant__chip {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.assistant__chip:hover {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.assistant__chip:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ---- Status row and stop ---- */
+
+.assistant__status {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px 0;
+}
+
+.assistant__notice {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  min-height: 1.4em;
+  font-size: 0.85rem;
+  color: var(--accent-text);
+}
+
+/* Muted until something is actually running, but never hidden and never
+   disabled: it has to be in the same place every time it is needed. */
+.assistant__stop {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-soft);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.assistant__stop svg { width: 14px; height: 14px; }
+
+.assistant__stop.is-active {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 20%, var(--surface));
+  color: var(--accent-text);
+}
+
+.assistant__stop:hover { color: var(--ink); border-color: var(--accent); }
+
+.assistant__stop:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ---- Composer ---- */
+
+.assistant__form {
+  flex-shrink: 0;
+  padding: 12px 18px 18px;
+  border-top: 1px solid var(--line);
+}
+
+/* The label is read, not seen — the placeholder alone is not a label, and it
+   disappears the moment anyone types. */
+.assistant__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.assistant__field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+
+.assistant__field:focus-within {
+  border-color: var(--accent);
+}
+
+.assistant__input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+}
+
+.assistant__input::placeholder { color: var(--ink-faint); }
+.assistant__input:focus { outline: none; }
+
+.assistant__mic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.assistant__mic svg { width: 20px; height: 20px; }
+
+.assistant__mic.is-listening {
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 20%, var(--surface));
+  color: var(--accent-text);
+}
+
+.assistant__mic:focus-visible,
+.assistant__send:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.assistant__send {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 12px;
+}
+
+/*
+ * On a phone it becomes a bottom sheet — but a sheet that stops short of the
+ * full screen on purpose. A full-height panel would hide the page just as
+ * effectively as a modal did, and the point of this panel is that the site
+ * stays visible and usable underneath it.
+ */
+/* Larger-text mode needs a bigger box, not the same box with bigger words in
+   it — otherwise the transcript turns into a two-line-per-message column. */
+:root[data-text="lg"] .assistant-panel {
+  width: min(30rem, calc(100vw - 24px));
+  max-height: min(40rem, calc(100dvh - 120px));
+}
+
+/* Short windows (a laptop with dev tools open, or a phone in landscape) —
+   never let the panel grow past the viewport and push its own composer off. */
+@media (max-height: 620px) {
+  .assistant-panel { max-height: calc(100dvh - 96px); }
+  .assistant__sub { display: none; }
+}
+
+@media (max-width: 560px) {
+  .assistant-panel {
+    left: max(8px, env(safe-area-inset-left));
+    right: max(8px, env(safe-area-inset-right));
+    width: auto;
+    max-height: min(70dvh, calc(100dvh - 120px));
+  }
+}

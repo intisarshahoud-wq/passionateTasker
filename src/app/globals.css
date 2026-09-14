@@ -1,6 +1,21 @@
 @import "tailwindcss";
-@import "./marketplace.css";
-@import "./auth.css";
+
+/*
+ * Feature stylesheets, in cascade order. Until 2026-09-14 the first six were
+ * one file (marketplace.css); it was split by owner without changing a rule,
+ * so this order is what keeps the page looking identical. Add new feature
+ * stylesheets at the end.
+ */
+@import "../styles/utilities.css";
+@import "../components/layout/header.css";
+@import "../features/landing/hero.css";
+@import "../features/job-post/job-post.css";
+@import "../features/landing/sections.css";
+@import "../components/layout/footer.css";
+@import "../features/auth/auth.css";
+@import "../features/assistant/assistant.css";
+@import "../features/services/services.css";
+@import "../features/booking/booking.css";
 
 :root {
   --bg: #17140F;
@@ -8,7 +23,7 @@
   --surface-2: #2A2319;
   --ink: #F3ECE3;
   --ink-soft: #B9AC9C;
-  --ink-faint: #8C7F6E;
+  --ink-faint: #978B7A; /* 4.6:1 or better on every dark surface (was #8C7F6E, 4.0:1 on surface-2) */
   --accent: #C87F41;
   --accent-text: #E0975A;
   --accent-ink-on-accent: #1A140E;
@@ -29,7 +44,7 @@ html[data-mode="light"] {
   --surface-2: #F1E9DC;
   --ink: #221C15;
   --ink-soft: #5B4F42;
-  --ink-faint: #8B7F70;
+  --ink-faint: #6F6354; /* 4.8:1 or better on every light surface (was #8B7F70, 3.3:1 on surface-2) */
   --accent: #C87F41;
   --accent-text: #8A5423;
   --accent-ink-on-accent: #221C15;

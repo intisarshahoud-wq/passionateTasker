@@ -1,0 +1,403 @@
+/*
+ * Landing sections: chips, trust strip, categories, jobs, trust, reviews, tradespeople.
+ *
+ * Tokens only, no raw hex values: any new colour must be a token from
+ * globals.css or a color-mix of one, so the light/dark toggle keeps working.
+ * Imported by app/globals.css, whose import order is the cascade order.
+ */
+
+/* ---- Chips ---- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: color 180ms var(--ease), border-color 180ms var(--ease), transform 180ms var(--ease);
+}
+.chip:hover { color: var(--ink); border-color: var(--accent); transform: translateY(-2px); }
+.chip__icon { width: 15px; height: 15px; color: var(--accent-text); }
+.chip--ghost { background: transparent; }
+.chip--filter[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink-on-accent);
+  font-weight: 600;
+}
+
+.hero-chips { margin-top: 30px; }
+.hero-chips__label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 12px;
+}
+.hero-chips ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+/* ---- Trust strip ---- */
+
+.trust-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px 28px;
+  list-style: none;
+  margin: 36px 0 0;
+  padding: 22px 0 0;
+  border-top: 1px solid var(--line);
+}
+.trust-strip li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+}
+.trust-strip__icon { width: 17px; height: 17px; color: var(--accent-text); flex-shrink: 0; }
+
+/* ---- Category grid ---- */
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+@media (max-width: 1000px) { .category-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .category-grid { grid-template-columns: 1fr; } }
+
+.category-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px;
+  text-decoration: none;
+  transition: transform 260ms var(--ease), border-color 220ms var(--ease);
+}
+.category-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+.category-card.is-soon { background: transparent; }
+
+.category-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-text);
+  transition: background-color 240ms var(--ease), color 240ms var(--ease), transform 300ms var(--ease-soft);
+}
+.category-card__icon svg { width: 20px; height: 20px; }
+.category-card:hover .category-card__icon {
+  background: var(--accent);
+  color: var(--accent-ink-on-accent);
+  transform: scale(1.06) rotate(-5deg);
+}
+
+.category-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.category-card__name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.012em;
+}
+.category-card__tasks {
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+  line-height: 1.45;
+  flex: 1;
+}
+.category-card__price {
+  font-size: 0.85rem;
+  color: var(--ink-faint);
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.category-card__price strong { color: var(--accent-text); font-size: 1rem; }
+
+.pill {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+.pill--live { color: var(--accent-text); border-color: var(--accent); }
+
+/* ---- Project (price anchor) cards ---- */
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+@media (max-width: 1000px) { .project-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .project-grid { grid-template-columns: 1fr; } }
+
+.service-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: transform 260ms var(--ease), border-color 220ms var(--ease);
+}
+.service-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+
+.service-card__media {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.service-card__img {
+  object-fit: cover;
+  transition: transform 520ms var(--ease-soft);
+}
+.service-card:hover .service-card__img { transform: scale(1.05); }
+
+/* The icon rides on the photo, so it needs its own ground rather than
+   relying on whatever happens to be behind it in the image. */
+.service-card__badge {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-text);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(6px);
+}
+.service-card__badge svg { width: 17px; height: 17px; }
+
+.service-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  padding: 18px 20px 20px;
+}
+
+.service-card__title { font-size: 1.02rem; margin: 0; }
+/* inline-block with a floor height so the link itself clears the 24px minimum
+   target size, not only the stretched card overlay. */
+.service-card__link {
+  text-decoration: none;
+  color: var(--ink);
+  display: inline-block;
+  min-height: 24px;
+  padding: 1px 0;
+}
+.service-card__link:focus-visible { outline: none; }
+/* Whole-card hit area, while the link keeps the accessible name. */
+.service-card__stretch { position: absolute; inset: 0; border-radius: inherit; }
+.service-card:focus-within { border-color: var(--accent); }
+.service-card:focus-within .service-card__stretch { outline: 2.5px solid var(--focus); outline-offset: 3px; }
+
+.service-card__blurb {
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+  margin: 0;
+  flex: 1;
+  line-height: 1.5;
+}
+
+.service-card__foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.service-card__price { font-size: 0.85rem; color: var(--ink-faint); }
+.service-card__price strong { color: var(--accent-text); font-size: 1.05rem; }
+.service-card__duration {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+.service-card__duration-icon { width: 14px; height: 14px; }
+
+/* ---- Trust section ---- */
+
+.trust-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+@media (max-width: 860px) { .trust-grid { grid-template-columns: 1fr; } }
+
+.trust-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 28px;
+  transition: border-color 220ms var(--ease), transform 260ms var(--ease);
+}
+.trust-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+.trust-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-text);
+  margin-bottom: 18px;
+}
+.trust-card__icon svg { width: 22px; height: 22px; }
+.trust-card h3 { font-size: 1.08rem; margin-bottom: 8px; }
+.trust-card p { color: var(--ink-soft); font-size: 0.92rem; margin: 0; line-height: 1.55; }
+
+/* ---- Accessibility list icons ---- */
+
+.a11y-list li svg { width: 18px; height: 18px; }
+
+/* ---- Stars ---- */
+
+.stars { display: inline-flex; align-items: center; }
+.stars__row { display: inline-flex; gap: 2px; }
+.stars svg { width: 16px; height: 16px; fill: var(--line); }
+.stars svg.is-filled { fill: var(--accent-text); }
+
+.review-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+  padding: 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  width: fit-content;
+}
+.review-summary__score {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.review-summary__meta { font-size: 0.82rem; color: var(--ink-faint); }
+
+/* ---- Testimonials ---- */
+
+.testimonial-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+@media (max-width: 900px) { .testimonial-grid { grid-template-columns: 1fr; } }
+
+.testimonial-card {
+  position: relative;
+  margin: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.testimonial-card blockquote {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--ink);
+  flex: 1;
+}
+.testimonial-card figcaption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.testimonial-card__avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.testimonial-card__name { font-weight: 600; font-size: 0.92rem; display: block; }
+.testimonial-card__meta { font-size: 0.82rem; color: var(--ink-faint); display: block; }
+
+/* ---- Tradesperson band ---- */
+
+.pro-band__lede { color: var(--ink-soft); font-size: 1rem; margin: 14px 0 0; max-width: 46ch; }
+/* This heading sits outside .section-head, and Tailwind's preflight resets
+   heading sizes to inherit — so it needs its size stated explicitly. */
+.pro-band h2 {
+  font-size: clamp(1.7rem, 2.6vw, 2.2rem);
+  line-height: 1.12;
+  letter-spacing: -0.022em;
+  margin: 10px 0 0;
+}
+
+/* ---- Tradesperson photo ---- */
+
+.pro-photo {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  margin-bottom: 18px;
+  background: var(--surface-2);
+}
+.pro-photo__img { object-fit: cover; }
+

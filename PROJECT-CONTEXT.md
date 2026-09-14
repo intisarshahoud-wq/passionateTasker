@@ -5,7 +5,7 @@
 > No prior knowledge of the project is assumed.
 
 Owner / sole developer: **Intisar** (intisarshahoud@gmail.com)
-Last updated: **2026-09-07**
+Last updated: **2026-09-14**
 Repo: `passionate-taskers/` inside `D:\web projects  with claude\`
 
 ---
@@ -56,10 +56,13 @@ Sections on the page, in order:
 
 1. **Header** — brand, five-item nav, the two accessibility toggles (larger
    text, light/dark), waitlist CTA, and a hamburger menu below 860px
-2. **Hero** — looping background video over a still photograph, behind a
-   graded scrim; animated headline, the task search, quick category chips and a
-   four-item trust strip. The video never autoplays under reduced motion and
-   always has a labelled pause control (WCAG 2.2.2)
+2. **Hero** — a playlist of trade clips (plumber, electrician,
+   handyman) that crossfade and loop over a still frame. A thin overlay
+   keeps the video clearly visible, and the text sits on a soft blurred plate so
+   it stays readable over any frame; animated headline, the task search, quick category chips and a
+   four-item trust strip. The video autoplays muted for every visitor, including reduced-motion
+   setups (Intisar's decision, 2026-09-14), always has a labelled pause control
+   (WCAG 2.2.2), and remembers a pause so it never autoplays on that visitor again
 3. **Services** — eight category cards; the three launch trades are marked
    "Available now" and the other five "Coming soon"
 4. **Popular jobs** — filterable price-anchor cards with photos ("from £54",
@@ -84,7 +87,7 @@ category guess is a keyword match in `structureJob()`; it stands in for the
 Claude call that will do it properly later. Voice uses the browser's Web Speech
 API where available and degrades to a typed message where it is not.
 
-**Accounts are a demo, not authentication.** `src/lib/auth.ts` keeps a plain
+**Accounts are a demo, not authentication.** `src/features/auth/demo-auth.ts` keeps a plain
 object in localStorage. There is no server, no password verification and no
 token; passwords are never stored, not even hashed. "Continue with Google" opens
 our own clearly-labelled chooser — no Google API is contacted, and it never asks
@@ -99,16 +102,48 @@ not touch the UI.
 The hero search likewise submits nowhere — it renders the structured job post
 locally.
 
+### Services and booking
+
+Built on 2026-09-14 after the TaskRabbit service-browser pattern: category
+tabs, then the jobs in that category, then a booking flow.
+
+- **The catalogue** is `src/data/services.ts`: nine categories (assembly,
+  mounting, moving, cleaning, outdoor help, home repairs, painting, plumbing,
+  electrical) plus a Trending tab, 47 bookable jobs in all, each with a summary
+  and an indicative hourly starting price. It is the single source for services:
+  the hero search, the chat assistant, the popular-jobs filter and the footer all
+  read from it. The old eight-category list in `marketplace.ts` is gone.
+- **The landing page** shows it in `ServiceExplorer`, a React Aria tab set
+  (arrow keys move between categories), with each job as a chip that starts a
+  booking, and a feature card linking to the category page.
+- **Pages:** `/services` lists every category, `/services/[category]` lists a
+  category's jobs, and `/book/[category]/[service]` is the booking flow. All are
+  generated at build time; unknown slugs are a 404.
+- **The booking flow** (`src/features/booking/BookingFlow.tsx`) is four steps:
+  the task (postcode, size, one category-specific question, details, with voice
+  dictation), the tasker (a shortlist of three), a date and time, then review
+  and confirm. Focus moves to each step's heading, errors are gathered in a
+  summary that takes focus and links to each field, choices are large React Aria
+  radio cards, and progress survives a refresh (session storage).
+- **Honesty:** the tradespeople are sample profiles from `src/data/taskers.ts`,
+  labelled as such on screen and shown with initials, not photographs. The
+  confirmation says plainly that nothing was sent and nobody will arrive.
+- **Legal notes** shown on the category pages: gas work needs Gas Safe (not
+  offered yet), notifiable electrical work needs a NICEIC or NAPIT registered
+  electrician, and taking rubbish away needs a waste carrier registration.
+- **Scope:** the catalogue grew from three trades to nine categories at
+  Intisar's request. All nine are browsable and bookable in the prototype;
+  which go live first at launch is still open (milestone 02).
+
+Verified with an end-to-end browser test: keyboard tab navigation, every
+booking step, error handling, refresh, phone widths, and an axe accessibility
+scan of every page and step in both themes (zero serious issues). That scan
+also caught `--ink-faint` failing contrast in light mode across the site; the
+token was fixed (see section 9).
+
 ### Where the code lives
 
-- `src/lib/marketplace.ts` — all mock data (categories, projects, suggestions,
-  testimonials, trust points), shaped like a future API response
-- `src/lib/display-prefs.ts` — the light-mode / larger-text store, mirrored onto
-  `<html>` and applied pre-paint by a script in `layout.tsx`
-- `src/components/site/*` — one component per section, plus `Icon`, `ServiceCard`
-  and `TaskSearch`, all reusable for category and search pages later
-- `src/app/marketplace.css` — the landing-page styles, imported by `globals.css`;
-  tokens only, no raw hex, so the light/dark toggle keeps working
+See section 12 for the folder layout and the rules that keep it tidy.
 
 ### Responsive
 
@@ -120,9 +155,18 @@ below 380 the wordmark drops to the mark alone.
 
 ### Imagery
 
-Hero footage is `public/hero.mp4` (Pexels, 1280x720, 4.7 MB), committed so the
-demo works offline. Placeholder photography comes from Unsplash, referenced by photo id in the
-`UNSPLASH` and `PORTRAITS` maps in `src/lib/marketplace.ts` and turned into URLs
+Hero footage is a playlist of three Pexels clips in `public/videos/`, played
+one after another by `HeroMedia` with a crossfade and then looped:
+`plumber.mp4` (9890450, Alejandro Torres: a plumber turning a wrench on an
+outdoor tap; 1920x1080, 5.7 MB), `electrician.mp4` (5391403: fitting a ceiling
+light; 1920x1080, 4.4 MB) and `handyman.mp4` (8487351: drilling at a wall socket
+in hard hat and hi-vis; 1280x720, 2.5 MB). Only the clip on screen and the next
+one are downloaded, and a browser that asks to save data gets the first clip
+only. `public/videos/plumber-poster.jpg` is a frame of the first clip (at 5.2 s)
+and is the still under the videos. All committed so the demo works offline. To
+add or swap a clip, edit `CLIPS` in `HeroMedia.tsx`, then re-run the hero
+contrast check: the scrim was tuned against these exact clips. Placeholder photography comes from Unsplash, referenced by photo id in the
+`UNSPLASH` and `PORTRAITS` maps in `src/data/marketplace.ts` and turned into URLs
 by `unsplashUrl()`. `next.config.ts` allows `images.unsplash.com` under
 `images.remotePatterns` so `next/image` can optimise them.
 
@@ -304,9 +348,14 @@ These are the product, not polish:
 
 - Every animation respects `prefers-reduced-motion` — the global CSS kills
   durations, Motion is configured with `reducedMotion="user"`, and each
-  hand-rolled effect (card tilt, stat counter, video autoplay, magnetic buttons)
+  hand-rolled effect (card tilt, stat counter, magnetic buttons)
   checks the media query itself.
 - The hero video **always** exposes a play/pause control; motion is never unavoidable.
+- **Deliberate exception:** the hero video autoplays even under reduced motion.
+  Intisar decided this on 2026-09-14 after finding that, with Windows animation
+  effects off, the video never moved at all. The safeguards: it is muted, the
+  pause control is always there, and a pause is remembered (`pt-hero-video` in
+  localStorage). Every other animation still respects the preference.
 - Toggle buttons carry real `aria-pressed` state.
 - Decorative SVG is `aria-hidden`; every interactive control has a label.
 - The header's larger-text toggle scales the root font size (100% → 118%), so
@@ -315,36 +364,78 @@ These are the product, not polish:
 
 ---
 
-## 12. Repo map
+## 12. Architecture and repo map
+
+Restructured on 2026-09-14. Before that, every section, shared piece, hook and
+the demo login sat in one flat `components/site/` folder, the whole page was a
+client component, and one 866-line stylesheet held every section's styles.
 
 ```
-passionate-taskers/
-├── src/
-│   ├── app/
-│   │   ├── layout.tsx        Root layout; loads Jost/Geist via next/font, sets page metadata
-│   │   ├── page.tsx          The entire landing page (~685 lines) — all sections + animations
-│   │   ├── globals.css       Design tokens, @theme inline bridge, all component CSS (~490 lines)
-│   │   └── favicon.ico
-│   └── components/
-│       ├── LogoMark.tsx      The mark as inline SVG, stroke-drawable
-│       ├── HeroVideo.tsx     Hero video with play/pause control + graceful fallback
-│       ├── PreviewCard.tsx   Product mock; the hero's default media when no video exists
-│       ├── Magnetic.tsx      Cursor-attraction wrapper (Motion springs)
-│       └── reactbits/
-│           └── CursorGrid.tsx / CursorGrid.css   Adapted background grid effect
-├── public/                   Default Next.js SVGs; drop hero.mp4 + hero-poster.jpg here
-├── package.json
-├── next.config.ts, tsconfig.json, eslint.config.mjs, postcss.config.mjs
-└── PROJECT-CONTEXT.md        ← this file
+passionate-taskers/src/
+├── app/                        Routes only. No product logic lives here.
+│   ├── layout.tsx              Root: <html>, fonts, metadata, pre-paint display-prefs script
+│   ├── globals.css             Tokens + base styles; imports every feature stylesheet in cascade order
+│   └── (marketing)/            Route group for public pages (brackets keep it out of the URL)
+│       ├── layout.tsx          Shared shell: skip link, header, footer, scroll bar, assistant
+│       ├── page.tsx            The landing page: puts sections in order, nothing else
+│       ├── services/           /services and /services/[category] (thin routes)
+│       └── book/               /book/[category]/[service] (thin route)
+├── features/                   One folder per product area: components, logic and styles together
+│   ├── landing/                The landing page sections, plus hero.css and sections.css
+│   ├── services/               ServiceExplorer (landing tabs), CategoryView, ServicesIndex, Breadcrumbs
+│   ├── booking/                BookingFlow (four steps + confirmation), BookingPage, booking.css
+│   ├── job-post/               TaskSearch, structure-job.ts (sentence to job post), job-post.css
+│   ├── assistant/              AssistantChat, engine.ts (the rule engine), assistant.css
+│   └── auth/                   AuthDialog, useSession, demo-auth.ts (DEMO ONLY), auth.css
+├── components/                 Shared building blocks that know nothing about any one feature
+│   ├── ui/                     Icon, Stars, LogoMark
+│   ├── motion/                 Reveal, RevealGroup, RevealItem, MotionProvider
+│   ├── effects/                Magnetic, CursorGrid (adapted from React Bits)
+│   └── layout/                 Site chrome: Header, Footer, ScrollProgress, header.css, footer.css
+├── lib/                        Browser helpers with no UI: display-prefs.ts, speech.ts
+├── data/                       services.ts (the catalogue), taskers.ts (sample profiles), marketplace.ts (other mock data)
+└── styles/                     utilities.css: small site-wide utility classes
 ```
 
-`page.tsx` is large because the whole landing page lives in it. When Phase 2
-starts, sections should be split into components.
+### Where new code goes
 
-Note: `page.tsx` currently mixes React state with a large `useEffect` that grabs
-DOM nodes by `getElementById` — a carry-over from the original static HTML
-prototype. It works and cleans up its listeners properly, but converting those
-toggles to React state is a known, worthwhile refactor.
+- `src/server/` — database access and anything that touches a secret key. Every
+  file there starts with `import "server-only"`. Created with the first real
+  backend code (milestone 03).
+- `src/app/api/` — Route Handlers. Kept thin: validate the input, check the
+  session, then call `src/server/`.
+- More public pages go in `src/app/(marketing)/`. The services and booking
+  routes are the pattern: a thin route that looks the data up and renders a
+  feature component.
+- `src/app/(app)/` — signed-in screens (dashboards, messages), with their own
+  layout and the light theme by default.
+
+### The rules
+
+1. **Server components by default.** Add `"use client"` only to the smallest
+   component that needs the browser: state, effects, event handlers or browser
+   APIs. A section that only fades in stays on the server and wraps the moving
+   parts in `Reveal`, `RevealGroup` and `RevealItem`.
+   - Server today: both layouts, the page, Footer, TrustSection,
+     AccessibilitySection, TestimonialSection, ProSection, ServiceCard,
+     ServicesIndex, CategoryView, BookingPage, Icon, Stars, LogoMark.
+   - Client today: Header, Hero, HeroMedia, PopularProjects (filters),
+     HowItWorks (GSAP), CTASection (session), TaskSearch, AuthDialog,
+     AssistantChat, ServiceExplorer (tabs), BookingFlow, and the motion and
+     effects wrappers.
+2. **Dependencies point one way:** `app` uses `features`, `features` use
+   `components`, `lib` and `data`. `components/ui`, `components/motion`,
+   `components/effects`, `lib` and `data` never import from `features`. The one
+   exception is `components/layout`: it is the site chrome, and the header uses
+   `features/auth` for the sign-in button.
+3. **Features may use each other's exported pieces** (the assistant uses
+   `structureJob()` from `job-post`; the waitlist uses `AuthForm` from `auth`),
+   but never reach into another feature's internals.
+4. **Styles live next to the code they style** and are imported from
+   `globals.css`, whose import order is the cascade order. Tokens only, no raw hex.
+5. **Secrets only ever live in `src/server/`.** Never in `features/`,
+   `components/`, `lib/` or anything imported by a client component.
+6. **Imports:** `@/` for anything outside the current folder, `./` for siblings.
 
 ---
 
@@ -400,8 +491,9 @@ Everything below lives in the parent folder, `D:\web projects  with claude\`:
 
 1. Run it (section 4) and click the two header toggles — larger text, and light
    mode. That is the product thesis in miniature.
-2. Skim `src/app/page.tsx` top to bottom. It is one file, and it is the whole
-   product as it stands today.
+2. Read section 12 (architecture and the rules), then open
+   `src/app/(marketing)/page.tsx` — it is the landing page's section order and
+   nothing else. Each section lives in `src/features/landing/`.
 3. Read section 5 (scope) and section 8 (the open backend decision) before
    proposing anything.
 4. The next real piece of work is Phase 1: decide the backend, then build the

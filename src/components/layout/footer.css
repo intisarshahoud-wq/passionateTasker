@@ -1,0 +1,65 @@
+/*
+ * Site footer.
+ *
+ * Tokens only, no raw hex values: any new colour must be a token from
+ * globals.css or a color-mix of one, so the light/dark toggle keeps working.
+ * Imported by app/globals.css, whose import order is the cascade order.
+ */
+
+/* ---- Footer ---- */
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+@media (max-width: 900px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; } }
+@media (max-width: 520px) { .footer-grid { grid-template-columns: 1fr; } }
+
+.footer-brand .footer-tagline { max-width: 40ch; margin-top: 12px; }
+
+.footer-heading {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  font-weight: 500;
+  margin: 0 0 14px;
+}
+.footer-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.footer-col a {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  text-decoration: none;
+  display: inline-block;
+  padding: 3px 0;
+}
+.footer-col a:hover { color: var(--accent-text); }
+
+.footer-base {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.footer-base p { margin: 0; font-size: 0.8rem; color: var(--ink-faint); }
+
+/*
+ * Header breakpoint, revisited.
+ *
+ * The bar now carries the brand, five nav items, two accessibility toggles and
+ * two account buttons. Below ~1100px that no longer fits on one line and the
+ * nav wraps, so the hamburger takes over earlier than the original 860px —
+ * nothing is lost, since the mobile menu carries the same links.
+ */
+header.site nav.primary a { white-space: nowrap; }
+
+@media (max-width: 1280px) {
+  header.site nav.primary { display: none; }
+  header.site .menu-btn { display: inline-flex; }
+}
