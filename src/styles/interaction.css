@@ -1,0 +1,70 @@
+/*
+ * How cards and chips respond to the pointer, in one place.
+ *
+ * Borders, shadows and colours fade in over about a third of a second, after a
+ * short pause, so a pointer sweeping across a grid does not flash every card
+ * it passes over. They fade out a little faster and without the pause, so the
+ * page never feels slow to let go.
+ *
+ * Imported last in globals.css so these timings win over each component's own
+ * transition shorthand. Colours and hover styles themselves stay in the
+ * component stylesheets; only the timing lives here.
+ */
+
+:root {
+  --hover-in: 320ms;
+  --hover-out: 220ms;
+  --hover-delay: 60ms;
+}
+
+.svc-card,
+.svc-chip,
+.svc-tab__icon,
+.service-card,
+.category-card,
+.trust-card,
+.chip,
+.tasker,
+.choice,
+.google-account,
+.assistant__chip {
+  transition-property: border-color, box-shadow, background-color, color, transform;
+  transition-duration: var(--hover-out);
+  transition-timing-function: var(--ease-soft);
+  transition-delay: 0ms;
+}
+
+.svc-card:hover,
+.svc-chip:hover,
+.svc-tab:hover .svc-tab__icon,
+.service-card:hover,
+.category-card:hover,
+.trust-card:hover,
+.chip:hover,
+.tasker:hover,
+.choice:hover,
+.google-account:hover,
+.assistant__chip:hover {
+  transition-duration: var(--hover-in);
+  transition-delay: var(--hover-delay);
+}
+
+/*
+ * Reduced motion: the cards stop lifting and the images stop zooming, so
+ * nothing jumps. The border and colour fade above still happens (the global
+ * reduced-motion rule keeps fades), so it is still clear what is under the
+ * pointer.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .svc-card:hover,
+  .service-card:hover,
+  .category-card:hover,
+  .trust-card:hover,
+  .chip:hover,
+  .svc-chip:hover,
+  .google-account:hover,
+  .service-card:hover .service-card__img,
+  .svc-card:hover .svc-card__cta svg {
+    transform: none;
+  }
+}

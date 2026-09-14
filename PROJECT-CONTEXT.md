@@ -56,9 +56,10 @@ Sections on the page, in order:
 
 1. **Header** — brand, five-item nav, the two accessibility toggles (larger
    text, light/dark), waitlist CTA, and a hamburger menu below 860px
-2. **Hero** — the message and search on the left, and on the right a
-   framed playlist of trade clips (plumber, electrician, home repairs) that
-   crossfade and loop, shown clear with no overlay; animated headline, the task search, quick category chips and a
+2. **Hero** — a background playlist of trade clips (plumber, electrician,
+   home repairs) that crossfade and loop behind the message and search. The
+   text sits on the left over a gradient that leaves the right of the video
+   clear; on phones and tablets the video is a banner above the text; animated headline, the task search, quick category chips and a
    four-item trust strip. The video autoplays muted for every visitor, including reduced-motion
    setups (Intisar's decision, 2026-09-14), always has a labelled pause control
    (WCAG 2.2.2), and remembers a pause so it never autoplays on that visitor again
@@ -163,8 +164,9 @@ in hard hat and hi-vis; 1280x720, 2.5 MB). Only the clip on screen and the next
 one are downloaded, and a browser that asks to save data gets the first clip
 only. `public/videos/plumber-poster.jpg` is a frame of the first clip (at 5.2 s)
 and is the still under the videos. All committed so the demo works offline. To
-add or swap a clip, edit `CLIPS` in `HeroMedia.tsx`, and pick clips with the action near the centre:
-the frame crops them to 5:4 on wide screens. Placeholder photography comes from Unsplash, referenced by photo id in the
+add or swap a clip, edit `CLIPS` in `HeroMedia.tsx`, and pick clips with the action in the centre or on
+the right, then re-run the hero contrast check in `.claude/tools`: the left of
+the scrim was tuned against these clips. Placeholder photography comes from Unsplash, referenced by photo id in the
 `UNSPLASH` and `PORTRAITS` maps in `src/data/marketplace.ts` and turned into URLs
 by `unsplashUrl()`. `next.config.ts` allows `images.unsplash.com` under
 `images.remotePatterns` so `next/image` can optimise them.
@@ -345,8 +347,9 @@ React Bits components come from `https://reactbits.dev/r/{Name}-TS-CSS.json`.
 
 These are the product, not polish:
 
-- Every animation respects `prefers-reduced-motion` — the global CSS kills
-  durations, Motion is configured with `reducedMotion="user"`, and each
+- Every animation respects `prefers-reduced-motion` — the global CSS removes
+  movement (animations, and transform transitions) but keeps gentle colour,
+  border and shadow fades, which help people see what is under the pointer; Motion is configured with `reducedMotion="user"`, and each
   hand-rolled effect (card tilt, stat counter, magnetic buttons)
   checks the media query itself.
 - The hero video **always** exposes a play/pause control; motion is never unavoidable.

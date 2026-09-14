@@ -8,8 +8,10 @@ import Image from "next/image";
  * the next, and after the last it starts again from the first.
  *
  * All are free-licence Pexels clips, landscape, 1920x1080, H.264, silent, and
- * short (about 10 to 20 seconds). The frame crops them to 5:4 on wide screens
- * and 16:10 on narrow ones, so pick clips with the action near the centre.
+ * short (about 10 to 20 seconds). On wide screens the text covers the left of
+ * the frame, so pick clips with the action in the centre or on the right. The
+ * scrim in hero.css was tuned by measuring text contrast over these clips:
+ * re-run that check (.claude/tools) whenever one is added or swapped.
  */
 const CLIPS = [
   { src: "/videos/plumber.mp4", trade: "Plumbing" },
@@ -52,8 +54,9 @@ function prefersSavingData(): boolean {
 }
 
 /**
- * The hero footage: a framed player beside the hero text, playing a playlist
- * of trade clips over a still frame, with a label naming the trade on screen.
+ * The hero background: a playlist of trade clips over a still frame, filling
+ * the hero behind the text (a banner above it on narrow screens), with a label
+ * naming the trade on screen.
  *
  * How it works: two <video> elements take turns. One is on screen; the other
  * quietly loads the next clip once the current one is playing, so each clip is
@@ -269,7 +272,7 @@ export function HeroMedia() {
         alt=""
         fill
         priority
-        sizes="(max-width: 1024px) 100vw, 50vw"
+        sizes="100vw"
         className="hero-media__img"
       />
 
@@ -302,8 +305,12 @@ export function HeroMedia() {
         </>
       )}
 
-      {/* Which trade is on screen. Solid background, so it stays readable over
-          any frame; hidden from screen readers like the footage itself. */}
+      <span className="hero-media__scrim" />
+
+      {/* Which trade is on screen, and the pause control. Both solid, so they
+          read over any frame; the label is hidden from screen readers like the
+          footage itself. */}
+      <div className="hero-media__bar">
       <span className="hero-media__label" aria-hidden="true">
         <span className="hero-media__label-dot" />
         {CLIPS[shownClip].trade}
@@ -334,6 +341,7 @@ export function HeroMedia() {
           )}
         </button>
       )}
+      </div>
     </div>
   );
 }

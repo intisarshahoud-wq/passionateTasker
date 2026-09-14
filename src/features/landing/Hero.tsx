@@ -47,22 +47,20 @@ const TRUST_STRIP = [
 const QUICK_JOBS = TRENDING.slice(0, 4);
 
 /**
- * The hero: the message and the search on the left, the trade footage on the
- * right.
+ * The hero: trade footage filling the background, with the message and the
+ * search on the left.
  *
- * Side by side, not layered. The video used to fill the whole hero behind the
- * text, which put the part of each clip worth seeing (the tap, the wrench, the
- * light fitting) directly behind the words, where it had to be darkened and
- * blurred for them to stay readable. Split, the footage is shown clear and in
- * full, and the text sits on the plain page background, so its contrast never
- * depends on what the video happens to be showing.
+ * The text is kept to the left so the right of the video can be shown clear;
+ * the scrim in hero.css darkens only where the text sits. On narrow screens
+ * the video becomes a banner above the text instead (see hero.css).
  */
 export function Hero() {
   return (
     <section className="hero" id="top">
-      <div className="wrap">
-        <div className="hero-split">
-          <motion.div className="hero-copy" variants={container} initial="hidden" animate="show">
+      <HeroMedia />
+
+      <div className="wrap hero-content">
+        <motion.div className="hero-copy" variants={container} initial="hidden" animate="show">
             <motion.span className="eyebrow" variants={item}>
               <span className="dot" aria-hidden="true" />
               Accessibility-first, from day one — now in early access
@@ -117,17 +115,7 @@ export function Hero() {
                 </li>
               </ul>
             </motion.div>
-          </motion.div>
-
-          <motion.div
-            className="hero-visual"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: easeOut, delay: 0.25 }}
-          >
-            <HeroMedia />
-          </motion.div>
-        </div>
+        </motion.div>
 
         <motion.ul
           className="trust-strip"

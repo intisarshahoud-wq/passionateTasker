@@ -1,72 +1,53 @@
 /*
- * Hero: split layout, the video frame, and the hero text.
+ * Hero: background video, scrim, layout and text.
  *
  * Tokens only, no raw hex values: any new colour must be a token from
  * globals.css or a color-mix of one, so the light/dark toggle keeps working.
  * Imported by app/globals.css, whose import order is the cascade order.
  */
 
-/* ---- Hero layout: message and search on the left, footage on the right ---- */
+/* ---- Hero layout: background video, text on the left ---- */
 
 /*
- * Side by side, not layered (changed 2026-09-14). The text sits on the plain
- * page background, so its contrast is the ordinary token contrast and never
- * depends on the footage. The video is shown clear and in full, with no scrim,
- * blur or tint over it.
+ * The video fills the hero behind the content (back to a background on
+ * 2026-09-14, at Intisar's request, after a spell as a side panel). The text
+ * sits on the left over a scrim that is dark on the left and clear on the
+ * right, so the right side of the footage is shown untouched. On narrow
+ * screens, where the text would cover the whole frame, the video becomes a
+ * banner above the text instead, again with nothing over it.
  *
  * Selectors are one step more specific than usual because the older hero rules
  * in globals.css load after this file.
  */
 section.hero {
-  padding: 60px 0 56px;
-  /* A soft copper glow, painted as a still background instead of the old
-     drifting blurred shapes: nothing moves behind the text, and nothing sits
-     there that an automated contrast check cannot read. */
-  background:
-    radial-gradient(60% 55% at 0% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%),
-    radial-gradient(50% 60% at 100% 100%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  min-height: min(88vh, 860px);
+  padding: 72px 0 40px;
 }
 .hero .wrap { max-width: 1320px; }
-
-.hero-split {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  /* The footage gets the larger share: seeing it is the point. */
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
-  gap: 56px;
-  align-items: center;
-}
-@media (max-width: 1024px) {
-  .hero-split { grid-template-columns: minmax(0, 1fr); gap: 36px; }
-}
-
-.hero-copy,
-.hero-visual { min-width: 0; }
+.hero-content { position: relative; z-index: 1; width: 100%; }
+.hero-copy { max-width: 600px; }
 
 /* The search and chips were sized for a centred hero; in the column they
    start at the left edge and use the full width. */
 .hero-copy .task-search { margin: 0; max-width: none; }
 .hero-copy .hero-chips ul { justify-content: flex-start; }
 
-.hero .trust-strip { position: relative; z-index: 1; margin-top: 48px; }
+.hero .trust-strip { margin-top: 48px; }
 
-/* ---- Video frame ---- */
+/* ---- Background video ---- */
 
 .hero-media {
-  position: relative;
-  aspect-ratio: 5 / 4;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 28px;
   background: var(--surface-2);
-  box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 12%, transparent);
 }
-@media (max-width: 1024px) {
-  .hero-media { aspect-ratio: 16 / 10; border-radius: 22px; }
-}
-
-.hero-media__img { object-fit: cover; }
+.hero-media__img { object-fit: cover; object-position: 60% 50%; }
 
 /* Two video elements take turns (see HeroMedia). Only the one on screen has
    .is-visible, so swapping the class crossfades them; a clip fades in only
@@ -78,21 +59,52 @@ section.hero {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: 60% 50%;
   opacity: 0;
   transition: opacity 900ms var(--ease);
 }
 .hero-media__video.is-visible { opacity: 1; }
 
-/* Which trade is on screen. Solid, so it reads over any frame. */
-.hero-media__label {
+/*
+ * Scrim: dark behind the text on the left, fading to fully clear by the right
+ * third, plus a short fade at the bottom so the hero joins the page. The left
+ * stops are the lightest of the options measured: the text colours were
+ * checked against every pixel behind the text, over frames from every clip, at
+ * desktop and phone widths, in both themes. Worst frames: headline 9.4:1,
+ * copper line 3.8:1 (needs 3:1, large text), lede 4.8:1 (needs 4.5:1).
+ * Lightening the left side, or adding a clip, means measuring again
+ * (.claude/tools, npm run contrast).
+ */
+.hero-media__scrim {
   position: absolute;
-  top: 16px;
-  left: 16px;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg,
+      color-mix(in srgb, var(--bg) 85%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 80%, transparent) 46%,
+      color-mix(in srgb, var(--bg) 30%, transparent) 62%,
+      transparent 78%),
+    linear-gradient(180deg, transparent 72%, var(--bg) 100%);
+}
+
+/* The trade label and pause control, top right, where the footage is clear. */
+.hero-media__bar {
+  position: absolute;
+  top: 24px;
+  right: 24px;
   z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hero-media__label {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 14px;
+  min-height: 40px;
+  padding: 0 14px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--surface);
@@ -103,10 +115,6 @@ section.hero {
 .hero-media__label-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
 
 .hero-media__toggle {
-  position: absolute;
-  right: 16px;
-  bottom: 16px;
-  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -124,9 +132,19 @@ section.hero {
 .hero-media__toggle:hover { border-color: var(--accent); color: var(--accent-text); }
 .hero-media__toggle:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .hero-media__toggle svg { width: 12px; height: 12px; }
+
+/* Narrow screens: the video becomes a banner above the text. */
+@media (max-width: 1024px) {
+  section.hero { display: block; min-height: 0; padding: 0 0 40px; }
+  .hero-media { position: relative; inset: auto; aspect-ratio: 16 / 10; max-height: 62vh; }
+  .hero-media__scrim { background: linear-gradient(180deg, transparent 72%, var(--bg) 100%); }
+  .hero-media__bar { top: 12px; right: 12px; }
+  .hero-content { padding-top: 28px; }
+  .hero-copy { max-width: none; }
+}
 @media (max-width: 620px) {
-  .hero-media__label { top: 12px; left: 12px; font-size: 0.8rem; }
-  .hero-media__toggle { right: 12px; bottom: 12px; font-size: 0.68rem; }
+  .hero-media__label { font-size: 0.8rem; min-height: 36px; }
+  .hero-media__toggle { font-size: 0.68rem; min-height: 36px; }
 }
 
 /* ---- Text ---- */
@@ -153,5 +171,4 @@ section.hero {
 .hero .eyebrow { margin-bottom: 20px; }
 @media (max-width: 520px) {
   .hero .eyebrow { font-size: 0.68rem; padding: 6px 10px; }
-  section.hero { padding-top: 40px; }
 }

@@ -16,6 +16,7 @@
 @import "../features/assistant/assistant.css";
 @import "../features/services/services.css";
 @import "../features/booking/booking.css";
+@import "../styles/interaction.css";
 
 :root {
   --bg: #17140F;
@@ -112,8 +113,15 @@ body {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+    /*
+     * Reduced motion removes movement: animations, and transitions of
+     * transform or position. Gentle fades of colour, borders and shadows stay,
+     * because they move nothing and they help people see what is under the
+     * pointer. (This used to cut every transition, which made hover borders
+     * snap on instantly for anyone with animation effects turned off.)
+     */
+    transition-property: color, background-color, border-color, box-shadow, opacity, outline-color, text-decoration-color, fill, stroke !important;
   }
 }
 
