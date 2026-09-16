@@ -77,7 +77,9 @@
   bottom: calc(max(16px, env(safe-area-inset-bottom)) + 68px);
   z-index: 65;
   width: min(26rem, calc(100vw - 32px));
-  max-height: min(34rem, calc(100dvh - 140px));
+  /* Tall enough that a whole answer fits without scrolling on a laptop
+     screen, and still clear of the site header above and the launcher below. */
+  max-height: min(44rem, calc(100dvh - 170px));
   /*
    * Column, not row. The panel's height is auto but clamped by max-height, and
    * a stretched row item is sized against the unclamped height — so the
@@ -104,16 +106,20 @@
   width: 100%;
 }
 
+/* One row: the title shrinks and wraps its own text, the buttons stay beside
+   it. When the buttons wrapped onto a second row they took the height the
+   conversation needed. */
 .assistant__head {
   flex-shrink: 0;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  flex-wrap: wrap;
   gap: 12px;
-  padding: 18px 18px 14px;
+  padding: 14px 14px 12px 18px;
   border-bottom: 1px solid var(--line);
 }
+
+.assistant__head > div:first-child { min-width: 0; }
 
 .assistant__title {
   margin: 0;
@@ -172,6 +178,9 @@
 /* ---- Transcript ---- */
 
 .assistant__log {
+  /* Positioned so each message's offsetTop is measured from the log itself;
+     the panel scrolls a new exchange into view by that (AssistantChat). */
+  position: relative;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -315,7 +324,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 18px 0;
+  padding: 6px 18px 0;
 }
 
 .assistant__notice {
@@ -452,14 +461,16 @@
    it — otherwise the transcript turns into a two-line-per-message column. */
 :root[data-text="lg"] .assistant-panel {
   width: min(30rem, calc(100vw - 24px));
-  max-height: min(40rem, calc(100dvh - 120px));
+  max-height: min(48rem, calc(100dvh - 170px));
 }
 
 /* Short windows (a laptop with dev tools open, or a phone in landscape) —
    never let the panel grow past the viewport and push its own composer off. */
+@media (max-height: 820px) {
+  .assistant__sub { display: none; }
+}
 @media (max-height: 620px) {
   .assistant-panel { max-height: calc(100dvh - 96px); }
-  .assistant__sub { display: none; }
 }
 
 @media (max-width: 560px) {

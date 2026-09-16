@@ -149,9 +149,18 @@ function Conversation({ onClose }: { onClose: () => void }) {
     inputRef.current?.focus();
   }, []);
 
+  /*
+   * Bring each new exchange into view from its start: your message, then the
+   * answer below it. Jumping to the very bottom hid the question and the
+   * answer's lead sentence whenever the answer was taller than the panel, so
+   * the one sentence that matters most needed scrolling back up to find.
+   */
   useEffect(() => {
     const log = logRef.current;
-    if (log) log.scrollTop = log.scrollHeight;
+    if (!log) return;
+    const turns = log.querySelectorAll<HTMLElement>(".assistant__turn--mine");
+    const latest = turns[turns.length - 1];
+    log.scrollTop = latest ? latest.offsetTop - 12 : 0;
   }, [messages]);
 
   /** Speak an answer and keep the Stop button's state honest while it runs. */
