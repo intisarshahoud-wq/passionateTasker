@@ -54,6 +54,29 @@ html[data-mode="light"] {
 }
 
 /*
+ * The hero text sits over video. A cream scrim washed the footage out in the
+ * light theme, so the hero uses a dark scrim in both themes, and the text over
+ * it uses the dark palette. --media-scrim is the same in both themes.
+ * Only on wide screens: below 1025px the video is a banner above the text.
+ */
+:root { --media-scrim: #17140F; }
+@media (min-width: 1025px) {
+  html[data-mode="light"] .hero-content {
+    --bg: #17140F;
+    --surface: #201C17;
+    --surface-2: #2A2319;
+    --ink: #F3ECE3;
+    --ink-soft: #B9AC9C;
+    --ink-faint: #978B7A;
+    --accent-text: #E0975A;
+    --accent-ink-on-accent: #1A140E;
+    --line: #332C24;
+    --focus: #E0975A;
+    color: var(--ink);
+  }
+}
+
+/*
  * Expose the Craft Premium tokens above to Tailwind.
  *
  * `inline` matters here: it makes the generated utilities reference these

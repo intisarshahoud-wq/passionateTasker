@@ -66,14 +66,12 @@ section.hero {
 .hero-media__video.is-visible { opacity: 1; }
 
 /*
- * Scrim: dark behind the text on the left, fading to fully clear by the right
- * third, plus a short fade at the bottom so the hero joins the page. The left
- * stops are the lightest of the options measured: the text colours were
- * checked against every pixel behind the text, over frames from every clip, at
- * desktop and phone widths, in both themes. Worst frames: headline 9.4:1,
- * copper line 3.8:1 (needs 3:1, large text), lede 4.8:1 (needs 4.5:1).
- * Lightening the left side, or adding a clip, means measuring again
- * (.claude/tools, npm run contrast).
+ * Scrim: dark behind the text on the left, fading to fully clear past the
+ * middle, plus a dark band at the bottom behind the trust strip. It is
+ * dark in both themes (--media-scrim): a cream scrim in the light theme washed
+ * the footage out, so over the video the text uses the dark palette (see
+ * globals.css). Changing these stops, or adding a clip, means measuring text
+ * contrast again (.claude/tools, npm run contrast).
  */
 .hero-media__scrim {
   position: absolute;
@@ -81,11 +79,14 @@ section.hero {
   pointer-events: none;
   background:
     linear-gradient(90deg,
-      color-mix(in srgb, var(--bg) 85%, transparent) 0%,
-      color-mix(in srgb, var(--bg) 80%, transparent) 46%,
-      color-mix(in srgb, var(--bg) 30%, transparent) 62%,
-      transparent 78%),
-    linear-gradient(180deg, transparent 72%, var(--bg) 100%);
+      color-mix(in srgb, var(--media-scrim) 88%, transparent) 0%,
+      color-mix(in srgb, var(--media-scrim) 82%, transparent) 48%,
+      color-mix(in srgb, var(--media-scrim) 30%, transparent) 62%,
+      transparent 74%),
+    linear-gradient(180deg,
+      transparent 68%,
+      color-mix(in srgb, var(--media-scrim) 85%, transparent) 86%,
+      var(--media-scrim) 100%);
 }
 
 /* The trade label and pause control, top right, where the footage is clear. */
