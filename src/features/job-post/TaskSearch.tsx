@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Button,
@@ -13,7 +15,10 @@ import {
 } from "react-aria-components";
 import { SEARCH_SUGGESTIONS } from "@/data/marketplace";
 import { structureJob, type StructuredJob } from "./structure-job";
-import { getSpeechRecognition, type SpeechRecognitionLike } from "@/lib/speech";
+import { stopSpeaking } from "@/lib/speech";
+import { bookingHref } from "@/data/services";
+import { matchService } from "@/features/booking/understand";
+import { runVoiceRequest } from "./voice-request";
 import { Icon } from "@/components/ui/Icon";
 
 /**
@@ -24,6 +29,11 @@ import { Icon } from "@/components/ui/Icon";
  * (or spoke) into a structured job post, in front of you. That demonstrates the
  * differentiator far better than a fake list of tradespeople would.
  *
+ * Voice is a whole conversation, not just dictation: the microphone asks what
+ * is needed, works out the job, reads it back, and on a yes opens the booking
+ * with everything already said filled in (see voice-request.ts). It exists for
+ * people who cannot see the page well enough to fill in a form.
+ *
  * Built on React Aria's ComboBox so the suggestion list gets the full ARIA
  * combobox pattern — announced option counts, arrow-key navigation and correct
  * focus handling — rather than a div that merely looks like one.
@@ -32,9 +42,10 @@ import { Icon } from "@/components/ui/Icon";
 export function TaskSearch() {
   const [value, setValue] = useState("");
   const [job, setJob] = useState<StructuredJob | null>(null);
-  const [listening, setListening] = useState(false);
-  const [voiceError, setVoiceError] = useState<string | null>(null);
-  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const [voice, setVoice] = useState<{ status: "speaking" | "listening"; words: string } | null>(null);
+  const voiceRef = useRef<AbortController | null>(null);
+  const router = useRouter();
+  const listening = voice !== null;
   /** Latest input text, readable from the deferred Enter handler below. */
   const valueRef = useRef("");
 
@@ -71,44 +82,45 @@ export function TaskSearch() {
     setJob(structureJob(trimmed));
   }
 
-  function toggleVoice() {
-    const Ctor = getSpeechRecognition();
-    if (!Ctor) {
-      setVoiceError(
-        "Voice input is not supported in this browser yet. Try Chrome or Edge, or type the job instead."
-      );
-      return;
-    }
-
-    if (listening) {
-      recognitionRef.current?.stop();
-      return;
-    }
-
-    setVoiceError(null);
-    const recognition = new Ctor();
-    recognition.lang = "en-GB";
-    recognition.interimResults = true;
-    recognition.continuous = false;
-
-    recognition.onresult = (event) => {
-      let transcript = "";
-      for (let i = 0; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
-      }
-      setValue(transcript);
-      valueRef.current = transcript;
-    };
-    recognition.onerror = () => {
-      setVoiceError("We could not hear that. Check the microphone permission, or type instead.");
-      setListening(false);
-    };
-    recognition.onend = () => setListening(false);
-
-    recognitionRef.current = recognition;
-    recognition.start();
-    setListening(true);
+  function stopVoice() {
+    voiceRef.current?.abort();
+    voiceRef.current = null;
+    stopSpeaking();
+    setVoice(null);
   }
+
+  // Leaving the page ends the conversation and releases the microphone.
+  useEffect(() => () => voiceRef.current?.abort(), []);
+
+  async function startVoice() {
+    stopVoice();
+    const controller = new AbortController();
+    voiceRef.current = controller;
+
+    const outcome = await runVoiceRequest({
+      signal: controller.signal,
+      onHeard: updateValue,
+      onStatus: (status, words) => setVoice({ status, words }),
+    });
+
+    if (voiceRef.current !== controller) return;
+    voiceRef.current = null;
+    setVoice(null);
+    if (outcome.href) {
+      router.push(outcome.href);
+    } else if (outcome.firstSentence) {
+      updateValue(outcome.firstSentence);
+      submit(outcome.firstSentence);
+    }
+  }
+
+  function toggleVoice() {
+    if (listening) stopVoice();
+    else void startVoice();
+  }
+
+  /** A direct way into booking when the typed job clearly names one. */
+  const bookable = job ? matchService(job.query) : null;
 
   return (
     <div className="task-search">
@@ -158,7 +170,7 @@ export function TaskSearch() {
               slot={null}
               onPress={toggleVoice}
               aria-pressed={listening}
-              aria-label={listening ? "Stop voice input" : "Describe the job by voice"}
+              aria-label={listening ? "Stop voice booking" : "Book by voice: say what you need"}
             >
               <Icon name="mic" />
             </Button>
@@ -184,15 +196,9 @@ export function TaskSearch() {
       </form>
 
       <p className="task-search__hint">
-        {listening
-          ? "Listening — say what needs fixing."
-          : "Say it or type it. No forms, no dropdown menus to work through."}
-      </p>
-
-      {/* Voice failures are announced, not just shown — the users most likely
-          to hit them are the ones least likely to see a small red line. */}
-      <p className="task-search__error" role="status">
-        {voiceError}
+        {voice
+          ? `${voice.status === "listening" ? "Listening…" : "Speaking:"} ${voice.words}`
+          : "Say it or type it. Press the microphone and we fill in the booking for you."}
       </p>
 
       <AnimatePresence>
@@ -241,9 +247,18 @@ export function TaskSearch() {
             </dl>
 
             <div className="job-preview__foot">
-              <a className="btn btn-primary" href="#waitlist">
-                {job.categoryLive ? "Get matched at launch" : "Tell us to launch this trade"}
-              </a>
+              {bookable?.category && bookable.service ? (
+                <Link
+                  className="btn btn-primary"
+                  href={bookingHref(bookable.category.slug, bookable.service.slug)}
+                >
+                  Book {bookable.service.name.toLowerCase()}
+                </Link>
+              ) : (
+                <a className="btn btn-primary" href="#waitlist">
+                  {job.categoryLive ? "Get matched at launch" : "Tell us to launch this trade"}
+                </a>
+              )}
               <p className="job-preview__note">
                 Design preview. Nothing is sent anywhere yet — matching goes live with early access.
               </p>

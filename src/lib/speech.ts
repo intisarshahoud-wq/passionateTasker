@@ -14,8 +14,14 @@ export interface SpeechRecognitionLike {
   continuous: boolean;
   start(): void;
   stop(): void;
-  onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
-  onerror: (() => void) | null;
+  abort?(): void;
+  onresult:
+    | ((event: {
+        resultIndex?: number;
+        results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal?: boolean }>;
+      }) => void)
+    | null;
+  onerror: ((event?: { error?: string }) => void) | null;
   onend: (() => void) | null;
 }
 
@@ -63,4 +69,92 @@ export function speak(text: string, onFinished?: () => void) {
 export function stopSpeaking() {
   if (!canSpeak()) return;
   window.speechSynthesis.cancel();
+}
+
+/*
+ * Promise versions, for spoken conversations: say something, wait until it has
+ * been said, then listen for one answer. Both take an AbortSignal so a Stop
+ * button can end the conversation at any point, mid-sentence or mid-answer.
+ */
+
+/** Speak and resolve once finished (or stopped). */
+export function speakAndWait(text: string, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    if (signal?.aborted) return resolve();
+    const onAbort = () => {
+      stopSpeaking();
+      resolve();
+    };
+    signal?.addEventListener("abort", onAbort, { once: true });
+    speak(text, () => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    });
+  });
+}
+
+/** Why listening produced no words. */
+export type ListenProblem = "unsupported" | "blocked" | "no-speech" | "stopped";
+
+export type ListenResult = { text: string } | { problem: ListenProblem };
+
+/**
+ * Listen for one spoken answer. `onInterim` receives the words as they are
+ * recognised, so the page can show them while the person is still talking.
+ */
+export function listenOnce(
+  options: { signal?: AbortSignal; onInterim?: (text: string) => void } = {}
+): Promise<ListenResult> {
+  const { signal, onInterim } = options;
+  return new Promise((resolve) => {
+    const Ctor = getSpeechRecognition();
+    if (!Ctor) return resolve({ problem: "unsupported" });
+    if (signal?.aborted) return resolve({ problem: "stopped" });
+
+    const recognition = new Ctor();
+    recognition.lang = "en-GB";
+    recognition.interimResults = true;
+    recognition.continuous = false;
+
+    let transcript = "";
+    let problem: ListenProblem | null = null;
+
+    const onAbort = () => {
+      problem = "stopped";
+      if (recognition.abort) recognition.abort();
+      else recognition.stop();
+    };
+    signal?.addEventListener("abort", onAbort, { once: true });
+
+    recognition.onresult = (event) => {
+      let text = "";
+      for (let i = 0; i < event.results.length; i++) text += event.results[i][0].transcript;
+      transcript = text;
+      onInterim?.(text);
+    };
+    recognition.onerror = (event) => {
+      if (problem) return;
+      const code = event?.error;
+      problem =
+        code === "not-allowed" || code === "service-not-allowed" || code === "audio-capture"
+          ? "blocked"
+          : code === "aborted"
+            ? "stopped"
+            : "no-speech";
+    };
+    recognition.onend = () => {
+      signal?.removeEventListener("abort", onAbort);
+      const text = transcript.trim();
+      if (problem === "stopped" || problem === "blocked") resolve({ problem });
+      else if (text) resolve({ text });
+      else resolve({ problem: "no-speech" });
+    };
+
+    try {
+      recognition.start();
+    } catch {
+      signal?.removeEventListener("abort", onAbort);
+      resolve({ problem: "blocked" });
+    }
+  });
 }

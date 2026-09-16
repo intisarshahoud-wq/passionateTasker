@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { Label, Radio, RadioGroup } from "react-aria-components";
 import { Icon } from "@/components/ui/Icon";
@@ -9,6 +10,19 @@ import { TASK_SIZES, categoryHref, getService, type TaskSize } from "@/data/serv
 import { taskersFor, type Tasker } from "@/data/taskers";
 import { useSession } from "@/features/auth/useSession";
 import { getSpeechRecognition, type SpeechRecognitionLike } from "@/lib/speech";
+import {
+  DAYS_AHEAD,
+  EMAIL,
+  POSTCODE,
+  SLOTS,
+  VOICE_FLAG,
+  loadDraft,
+  storageKey,
+  upcomingDays,
+  type Draft,
+  type SlotId,
+} from "./draft";
+import { useVoiceGuide } from "./voice-guide";
 
 /**
  * The booking flow: describe the task, choose a tasker, pick a time, confirm.
@@ -32,14 +46,6 @@ import { getSpeechRecognition, type SpeechRecognitionLike } from "@/lib/speech";
  * - No time limits anywhere.
  */
 
-type SlotId = "morning" | "afternoon" | "evening";
-
-const SLOTS: { id: SlotId; label: string; hours: string }[] = [
-  { id: "morning", label: "Morning", hours: "8am to 12pm" },
-  { id: "afternoon", label: "Afternoon", hours: "12pm to 5pm" },
-  { id: "evening", label: "Evening", hours: "5pm to 8pm" },
-];
-
 const STEPS = [
   { title: "Describe your task", short: "Task" },
   { title: "Choose your tasker", short: "Tasker" },
@@ -49,81 +55,12 @@ const STEPS = [
 
 const LAST_STEP = STEPS.length - 1;
 
-interface Draft {
-  step: number;
-  postcode: string;
-  size: TaskSize | "";
-  answer: string;
-  details: string;
-  taskerId: string;
-  date: string;
-  slot: SlotId | "";
-  name: string;
-  email: string;
-  phone: string;
-}
-
-const EMPTY: Draft = {
-  step: 0,
-  postcode: "",
-  size: "",
-  answer: "",
-  details: "",
-  taskerId: "",
-  date: "",
-  slot: "",
-  name: "",
-  email: "",
-  phone: "",
-};
-
 type Field = "postcode" | "size" | "answer" | "taskerId" | "date" | "slot" | "name" | "email";
 type Errors = Partial<Record<Field, string>>;
-
-const POSTCODE = /^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i;
-const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-interface Day {
-  iso: string;
-  label: string;
-  long: string;
-}
-
-/** Today and the next few days, labelled the way people say them. */
-function upcomingDays(count: number): Day[] {
-  const short = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" });
-  const long = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long" });
-  const start = new Date();
-  start.setHours(12, 0, 0, 0);
-
-  return Array.from({ length: count }, (_, i) => {
-    const d = new Date(start);
-    d.setDate(start.getDate() + i);
-    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    const prefix = i === 0 ? "Today, " : i === 1 ? "Tomorrow, " : "";
-    return {
-      iso,
-      label: i === 0 ? "Today" : i === 1 ? "Tomorrow" : short.format(d),
-      long: prefix + long.format(d),
-    };
-  });
-}
-
-const storageKey = (category: string, service: string) => `pt-booking-${category}-${service}`;
 
 /** A short, readable reference for the confirmation screen. */
 function newReference(): string {
   return `PT-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
-}
-
-function loadDraft(key: string): Draft {
-  try {
-    const raw = sessionStorage.getItem(key);
-    if (raw) return { ...EMPTY, ...(JSON.parse(raw) as Partial<Draft>) };
-  } catch {
-    /* blocked or corrupt storage: start fresh */
-  }
-  return EMPTY;
 }
 
 const subscribeToNothing = () => () => {};
@@ -161,7 +98,7 @@ function Flow({ categorySlug, serviceSlug }: { categorySlug: string; serviceSlug
   const [draft, setDraft] = useState<Draft>(() => loadDraft(key));
   const [errors, setErrors] = useState<Errors>({});
   const [done, setDone] = useState<Confirmation | null>(null);
-  const [days] = useState(() => upcomingDays(7));
+  const [days] = useState(() => upcomingDays(DAYS_AHEAD));
   const [listening, setListening] = useState(false);
   const [voiceNote, setVoiceNote] = useState<string | null>(null);
 
@@ -181,6 +118,67 @@ function Flow({ categorySlug, serviceSlug }: { categorySlug: string; serviceSlug
   const slot = SLOTS.find((s) => s.id === draft.slot);
   const estimate = size && tasker ? Math.round(size.hours * tasker.hourlyRate) : null;
   const { step } = draft;
+
+  const guide = useVoiceGuide({
+    draft,
+    done,
+    category,
+    service,
+    taskers,
+    days,
+    set,
+    goTo,
+    next: handleContinue,
+  });
+
+  // Arriving from the hero's voice search (?voice), the guide starts by itself
+  // and carries on the conversation the person already began there.
+  // Read through Next rather than window.location: after a client-side
+  // navigation the address bar can update after this first render.
+  const searchParams = useSearchParams();
+  const [arrivedByVoice] = useState(() => searchParams.has(VOICE_FLAG));
+  const startGuide = guide.start;
+  useEffect(() => {
+    if (!arrivedByVoice) return;
+    const params = new URLSearchParams(window.location.search);
+    params.delete(VOICE_FLAG);
+    const query = params.toString();
+    // A refresh should not restart the conversation, so the flag is removed.
+    window.history.replaceState(null, "", window.location.pathname + (query ? `?${query}` : ""));
+    void startGuide(
+      `Let's book ${service.name}. I have filled in what you already told me, and I will ask for the rest, one question at a time. Say stop at any time, go back to return to the last step, or repeat to hear a question again.`
+    );
+  }, [arrivedByVoice, startGuide, service.name]);
+
+  const voicePanel = (
+    <div className={`voice-guide${guide.status !== "off" ? " is-active" : ""}`}>
+      <button
+        type="button"
+        className={`btn ${guide.status === "off" ? "btn-primary" : "btn-outline"} voice-guide__toggle`}
+        onClick={() => (guide.status === "off" ? void guide.start() : guide.stop())}
+      >
+        <Icon name="mic" />
+        {guide.status === "off" ? "Book by voice" : "Stop voice booking"}
+      </button>
+      {guide.status === "off" ? (
+        <p className="voice-guide__hint">
+          Can&rsquo;t see the form well? I will ask each question out loud and fill it in as you
+          answer. Press Escape to stop.
+        </p>
+      ) : (
+        // Not a live region: the guide is already speaking these words, and a
+        // screen reader announcing them too would talk over it.
+        <div className="voice-guide__talk">
+          <p className="voice-guide__status">
+            <span className="voice-guide__dot" aria-hidden="true" />
+            {guide.status === "listening" ? "Listening…" : "Speaking"}
+          </p>
+          <p className="voice-guide__said">{guide.said}</p>
+          {guide.heard && <p className="voice-guide__heard">You said: &ldquo;{guide.heard}&rdquo;</p>}
+        </div>
+      )}
+    </div>
+  );
 
   // Keep the answers for this tab, so a refresh does not lose them.
   useEffect(() => {
@@ -324,6 +322,7 @@ function Flow({ categorySlug, serviceSlug }: { categorySlug: string; serviceSlug
   if (done) {
     return (
       <div className="booking-done">
+        {guide.status !== "off" && voicePanel}
         <span className="booking-done__icon" aria-hidden="true">
           <Icon name="check" />
         </span>
@@ -382,6 +381,8 @@ function Flow({ categorySlug, serviceSlug }: { categorySlug: string; serviceSlug
 
   return (
     <div className="booking">
+      {voicePanel}
+
       <ol className="booking__progress" aria-label="Booking steps">
         {STEPS.map((s, i) => (
           <li

@@ -125,6 +125,21 @@ tabs, then the jobs in that category, then a booking flow.
   and confirm. Focus moves to each step's heading, errors are gathered in a
   summary that takes focus and links to each field, choices are large React Aria
   radio cards, and progress survives a refresh (session storage).
+- **Book by voice** (added 2026-09-16, for blind and low-vision visitors): the
+  hero microphone starts a spoken conversation. The visitor says what they need
+  in their own words ("I need an electrician, my sockets keep sparking, SW1A
+  1AA, tomorrow morning"); the site works out the job, asks only when it cannot
+  tell, reads back what it understood, and on a yes opens the booking with the
+  postcode, day, time and details already filled in. The booking page's voice
+  guide (also started with its own "Book by voice" button) then asks each
+  missing question aloud, fills in the real form fields, spells postcodes and
+  email addresses back, and only moves on after a yes. "Stop", "go back" and
+  "repeat" work at every question; Escape stops it. Understanding is keyword
+  and pattern matching in `src/features/booking/understand.ts`, no API key;
+  `understandRequest()` is the seam for a real model later. Files:
+  `features/job-post/voice-request.ts` (hero conversation),
+  `features/booking/voice-guide.ts` (booking conversation),
+  `features/booking/draft.ts` (the booking answers and the hand-over).
 - **Honesty:** the tradespeople are sample profiles from `src/data/taskers.ts`,
   labelled as such on screen and shown with initials, not photographs. The
   confirmation says plainly that nothing was sent and nobody will arrive.
@@ -385,8 +400,8 @@ passionate-taskers/src/
 ├── features/                   One folder per product area: components, logic and styles together
 │   ├── landing/                The landing page sections, plus hero.css and sections.css
 │   ├── services/               ServiceExplorer (landing tabs), CategoryView, ServicesIndex, Breadcrumbs
-│   ├── booking/                BookingFlow (four steps + confirmation), BookingPage, booking.css
-│   ├── job-post/               TaskSearch, structure-job.ts (sentence to job post), job-post.css
+│   ├── booking/                BookingFlow (four steps + confirmation), BookingPage, draft.ts, understand.ts + voice-guide.ts (book by voice), booking.css
+│   ├── job-post/               TaskSearch, structure-job.ts (sentence to job post), voice-request.ts (hero voice conversation), job-post.css
 │   ├── assistant/              AssistantChat, engine.ts (the rule engine), assistant.css
 │   └── auth/                   AuthDialog, useSession, demo-auth.ts (DEMO ONLY), auth.css
 ├── components/                 Shared building blocks that know nothing about any one feature

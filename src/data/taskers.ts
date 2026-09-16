@@ -78,8 +78,8 @@ export function taskersFor(category: ServiceCategory, service: SubService): Task
         .map((part) => part[0])
         .join(""),
       rating: ratings[i],
-      reviews: 40 + ((seed >> (i * 3)) % 160),
-      jobsDone: 60 + ((seed >> (i * 4 + 1)) % 300),
+      reviews: 40 + ((seed >>> (i * 3)) % 160),
+      jobsDone: 60 + ((seed >>> (i * 4 + 1)) % 300),
       hourlyRate: rates[i],
       yearsExperience: person.years,
       responseTime: person.response,

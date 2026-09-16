@@ -203,6 +203,44 @@
 }
 .booking__mic:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
+/* ---- Voice guide: book by speaking ---- */
+
+.voice-guide {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px 20px;
+  margin-bottom: 24px;
+  padding: 18px 20px;
+  border: 1.5px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+.voice-guide.is-active { border-color: var(--accent); }
+.voice-guide__toggle { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; }
+.voice-guide__toggle svg { width: 18px; height: 18px; }
+.voice-guide__hint { flex: 1 1 260px; margin: 0; align-self: center; color: var(--ink-soft); }
+.voice-guide__talk { flex: 1 1 280px; min-width: 0; }
+.voice-guide__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--accent-text);
+}
+.voice-guide__dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+.voice-guide__said { margin: 0; font-size: 1.1rem; line-height: 1.5; color: var(--ink); }
+.voice-guide__heard { margin: 8px 0 0; color: var(--ink-soft); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .voice-guide.is-active .voice-guide__dot { animation: voice-guide-pulse 1.2s ease-in-out infinite; }
+}
+@keyframes voice-guide-pulse {
+  50% { opacity: 0.35; }
+}
+
 /* ---- Choice cards (React Aria Radio renders a <label>) ---- */
 
 .choice-grid {
