@@ -48,18 +48,3 @@
   border-top: 1px solid var(--line);
 }
 .footer-base p { margin: 0; font-size: 0.8rem; color: var(--ink-faint); }
-
-/*
- * Header breakpoint, revisited.
- *
- * The bar now carries the brand, five nav items, two accessibility toggles and
- * two account buttons. Below ~1100px that no longer fits on one line and the
- * nav wraps, so the hamburger takes over earlier than the original 860px —
- * nothing is lost, since the mobile menu carries the same links.
- */
-header.site nav.primary a { white-space: nowrap; }
-
-@media (max-width: 1280px) {
-  header.site nav.primary { display: none; }
-  header.site .menu-btn { display: inline-flex; }
-}

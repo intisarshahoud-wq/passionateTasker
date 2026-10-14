@@ -107,7 +107,7 @@
   text-decoration: none;
   transition: transform 260ms var(--ease), border-color 220ms var(--ease);
 }
-.category-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+.category-card:hover { transform: translateY(-4px); border-color: var(--accent); }
 .category-card.is-soon { background: transparent; }
 
 .category-card__icon {
@@ -190,7 +190,7 @@
   overflow: hidden;
   transition: transform 260ms var(--ease), border-color 220ms var(--ease);
 }
-.service-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+.service-card:hover { transform: translateY(-4px); border-color: var(--accent); }
 
 .service-card__media {
   position: relative;
@@ -277,8 +277,11 @@
 
 /* ---- Trust section ---- */
 
-.trust-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-@media (max-width: 860px) { .trust-grid { grid-template-columns: 1fr; } }
+/* Four checks, one card each. Two by two on a tablet, so a card never gets too
+   narrow to hold a badge name like "Public liability insurance checked". */
+.trust-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+@media (max-width: 1080px) { .trust-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .trust-grid { grid-template-columns: 1fr; } }
 
 .trust-card {
   background: var(--surface);
@@ -301,8 +304,8 @@
   margin-bottom: 18px;
 }
 .trust-card__icon svg { width: 22px; height: 22px; }
-.trust-card h3 { font-size: 1.08rem; margin-bottom: 8px; }
-.trust-card p { color: var(--ink-soft); font-size: 0.92rem; margin: 0; line-height: 1.55; }
+.trust-card h3 { font-size: 1.08rem; line-height: 1.25; margin-bottom: 8px; }
+.trust-card p { color: var(--ink-soft); font-size: 0.95rem; margin: 0; line-height: 1.55; }
 
 /* ---- Accessibility list icons ---- */
 

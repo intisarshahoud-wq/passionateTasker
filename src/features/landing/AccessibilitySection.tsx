@@ -1,11 +1,17 @@
+import Link from "next/link";
 import { Reveal } from "@/components/motion/Reveal";
 import { Icon } from "@/components/ui/Icon";
 import type { IconName } from "@/data/marketplace";
 
+/*
+ * Each line has to be true of the site as it stands. "Complete" and "full" are
+ * not words to use here until real people with real screen readers have been
+ * through every page; what has and has not been tested is on /accessibility.
+ */
 const POINTS: { icon: IconName; label: string }[] = [
-  { icon: "mic", label: "Full voice navigation, not just voice search" },
-  { icon: "keyboard", label: "Complete screen reader and keyboard support" },
-  { icon: "eye", label: "One-tap larger text and light mode — try them in the header now" },
+  { icon: "mic", label: "Book by voice from start to finish, not just voice search" },
+  { icon: "keyboard", label: "Built for screen readers and for keyboard-only use, on every page" },
+  { icon: "eye", label: "Larger text, light mode and high contrast, in the header of every page" },
   { icon: "list", label: "Simple, uncluttered layouts over feature-packed screens" },
 ];
 
@@ -34,9 +40,14 @@ export function AccessibilitySection() {
             ))}
           </ul>
           <p className="a11y-cta">
-            Those two buttons in the header are not a demo. The same{" "}
-            <strong>larger text and light mode</strong> ship in the product itself — one brand,
-            two surfaces, whichever one you can read.
+            The display settings in the header are not a demo. The same{" "}
+            <strong>larger text, light mode and high contrast</strong> ship in the product
+            itself, on every screen.
+          </p>
+          <p className="section-more">
+            <Link className="text-link" href="/accessibility">
+              Read our mission and accessibility page, including what does not work yet
+            </Link>
           </p>
         </Reveal>
       </div>

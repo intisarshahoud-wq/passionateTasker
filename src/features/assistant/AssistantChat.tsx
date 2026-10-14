@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import Link from "next/link";
 import { Button } from "react-aria-components";
 import { GREETING, respond, spokenForm, type AssistantReply } from "./engine";
-import { setMode, setTextSize } from "@/lib/display-prefs";
+import { setContrast, setMode, setTextSize } from "@/lib/display-prefs";
+import { SITE } from "@/lib/site";
 import {
   canSpeak,
   getSpeechRecognition,
@@ -109,7 +111,7 @@ export function AssistantChat() {
           className="assistant-panel"
           role="dialog"
           aria-modal="false"
-          aria-label="Passionate Taskers assistant"
+          aria-label={`${SITE.name} assistant`}
         >
           <Conversation onClose={close} />
         </div>
@@ -213,6 +215,12 @@ function Conversation({ onClose }: { onClose: () => void }) {
         break;
       case "dark-mode":
         setMode("dark");
+        break;
+      case "contrast-high":
+        setContrast("high");
+        break;
+      case "contrast-normal":
+        setContrast("normal");
         break;
       default:
         break;
@@ -445,19 +453,20 @@ function MessageBubble({
               <dt>Matches nearby</dt>
               <dd>
                 {message.job.categoryLive
-                  ? `${message.job.matches} verified tradespeople`
+                  ? `${message.job.matches} identity-verified tradespeople`
                   : "Not in your area yet"}
               </dd>
             </div>
           </dl>
         )}
 
-        {/* Following this leaves the panel open — the page behind scrolls to
-            the section, and the conversation is still here afterwards. */}
+        {/* Following this leaves the panel open. It is a Next link, so going
+            to another page swaps only the page behind: the panel lives in the
+            shared layout, and the conversation is still here afterwards. */}
         {message.link && (
-          <a className="assistant__link" href={message.link.href}>
+          <Link className="assistant__link" href={message.link.href}>
             {message.link.label}
-          </a>
+          </Link>
         )}
       </div>
 

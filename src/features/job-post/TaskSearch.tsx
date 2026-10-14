@@ -240,7 +240,7 @@ export function TaskSearch() {
                 <dt>Matches nearby</dt>
                 <dd>
                   {job.categoryLive
-                    ? `${job.matches} verified tradespeople`
+                    ? `${job.matches} identity-verified tradespeople`
                     : "Not in your area yet"}
                 </dd>
               </div>

@@ -1,5 +1,6 @@
 /*
- * Shared utilities: visually-hidden, section anchors, section notes.
+ * Shared utilities: visually-hidden, section anchors, section notes, standalone
+ * links, the "planned" status tag, and the questions-and-answers list.
  *
  * Tokens only, no raw hex values: any new colour must be a token from
  * globals.css or a color-mix of one, so the light/dark toggle keeps working.
@@ -37,4 +38,97 @@ section[id] { scroll-margin-top: 92px; }
   color: var(--ink-faint);
   max-width: 68ch;
 }
+
+/* The link out of a section, to the page that says the rest. */
+.section-more { margin: 22px 0 0; }
+
+/* ---- Links ---- */
+
+/*
+ * A link that stands on its own line. Always underlined, so it is never told
+ * apart from the text around it by colour alone, and tall enough to press.
+ * (Links inside a sentence are styled by the block they are in, and stay
+ * inline so a long one can wrap.)
+ */
+.text-link {
+  display: inline-block;
+  min-height: 24px;
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
+}
+.text-link:hover { color: var(--ink); }
+.text-link:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+
+/* ---- Status ---- */
+
+/*
+ * "Planned, not built yet." A dashed edge and a clock, so it reads as a
+ * different kind of statement from everything around it without relying on
+ * colour. Written to outrank `.section-head p`, which it often sits inside.
+ */
+.status-tag,
+.section-head .status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 7px 14px;
+  border: 1.5px dashed var(--accent);
+  border-radius: 999px;
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.status-tag svg { width: 17px; height: 17px; flex-shrink: 0; color: var(--accent-text); }
+
+/* ---- Questions and answers (components/ui/FaqList) ---- */
+
+.faq { display: grid; gap: 10px; max-width: 52rem; }
+
+.faq__item {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  transition: border-color 200ms var(--ease);
+}
+.faq__item[data-expanded] { border-color: var(--accent); }
+
+.faq__heading { margin: 0; font-size: 1.06rem; line-height: 1.35; letter-spacing: -0.01em; }
+
+.faq__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 60px;
+  padding: 14px 20px;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.faq__trigger[data-hovered] { color: var(--accent-text); }
+.faq__trigger[data-focus-visible] { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+/* The arrow turns over when the answer is open: a shape change, not a colour. */
+.faq__chevron {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: var(--accent-text);
+  transition: transform 200ms var(--ease);
+}
+.faq__item[data-expanded] .faq__chevron { transform: rotate(180deg); }
+
+.faq__answer { padding: 0 20px 20px; max-width: 68ch; }
+.faq__answer p { margin: 0 0 12px; color: var(--ink-soft); font-size: 1rem; line-height: 1.65; }
+.faq__answer p:last-child { margin-bottom: 0; }
 

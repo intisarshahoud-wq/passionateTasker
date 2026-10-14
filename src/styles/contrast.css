@@ -1,0 +1,77 @@
+/*
+ * High contrast: the places where new colours alone are not enough.
+ *
+ * Most of the high-contrast theme is just the token values in globals.css:
+ * every stylesheet uses the tokens, so every screen changes with them. This
+ * file holds the few rules that need more than a colour swap, and the reason
+ * for each.
+ *
+ * Every selector starts with `html[data-contrast="high"]`, so nothing here can
+ * touch the ordinary themes.
+ */
+
+/* Nothing see-through. Text must never sit on a blend of two things. */
+html[data-contrast="high"] header.site {
+  background: var(--bg);
+  backdrop-filter: none;
+}
+html[data-contrast="high"] .service-card__badge {
+  background: var(--bg);
+  backdrop-filter: none;
+}
+html[data-contrast="high"] .auth-overlay {
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: none;
+}
+
+/*
+ * Links are underlined, so a link is never told apart from the text around it
+ * by colour alone. Buttons, chips and the logo already look like what they are.
+ */
+html[data-contrast="high"] a:not(.btn, .logo, .chip, .svc-chip, .skip-link) {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+/* The nav's sliding underline would double up with the real one. */
+html[data-contrast="high"] nav.primary a::after { display: none; }
+html[data-contrast="high"] nav.primary a[aria-current] {
+  font-weight: 700;
+  text-decoration-thickness: 3px;
+}
+
+/* A heavier focus ring, in the strongest colour the theme has. */
+html[data-contrast="high"] :is(a, button, input, textarea, select, summary, [tabindex]):focus-visible,
+html[data-contrast="high"] [data-focus-visible] {
+  outline-width: 4px;
+}
+
+/*
+ * Stars. Borders are bright in this theme, and empty stars are drawn in the
+ * border colour, so a full star and an empty one would look the same. Empty
+ * stars become outlines instead.
+ */
+html[data-contrast="high"] .stars svg {
+  fill: none;
+  stroke: var(--ink-faint);
+  stroke-width: 1.5;
+}
+html[data-contrast="high"] .stars svg.is-filled {
+  fill: var(--accent-text);
+  stroke: var(--accent-text);
+}
+
+/*
+ * The hero. On wide screens the text sits over the video, which can never be a
+ * dependable background. In this theme the text gets a solid panel of its own,
+ * and the video shows around it.
+ */
+@media (min-width: 1025px) {
+  html[data-contrast="high"] .hero-copy,
+  html[data-contrast="high"] .hero .trust-strip {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+  }
+  html[data-contrast="high"] .hero-copy { max-width: 664px; padding: 30px 32px; }
+  html[data-contrast="high"] .hero .trust-strip { margin-top: 24px; padding: 18px 22px; }
+}

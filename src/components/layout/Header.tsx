@@ -1,60 +1,60 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Icon } from "@/components/ui/Icon";
 import { LogoMark } from "@/components/ui/LogoMark";
 import { Magnetic } from "@/components/effects/Magnetic";
 import { signOut } from "@/features/auth/demo-auth";
 import { AuthDialog } from "@/features/auth/AuthDialog";
 import { useSession } from "@/features/auth/useSession";
-import {
-  getServerSnapshot,
-  getSnapshot,
-  setMode,
-  setTextSize,
-  subscribe,
-  syncFromDom,
-} from "@/lib/display-prefs";
+import { SITE } from "@/lib/site";
+import { DisplayControls } from "./DisplayControls";
 
 const NAV = [
-  { href: "/#services", label: "Services" },
-  { href: "/#projects", label: "Popular jobs" },
-  { href: "/#how", label: "How it works" },
-  { href: "/#trust", label: "Trust and safety" },
+  { href: "/services", label: "Services" },
+  { href: "/how-it-works", label: "How it works" },
+  { href: "/trust", label: "Trust and safety" },
+  { href: "/accessibility", label: "Accessibility" },
   { href: "/#pros", label: "For tradespeople" },
 ];
 
+/** The two panels that open under the bar on narrower screens. */
+type Panel = "menu" | "display" | null;
+
 /**
- * Sticky site header: brand, primary nav, the two accessibility controls, and
- * the primary CTA.
+ * Sticky site header: brand, primary nav, the display settings, and the
+ * primary CTA.
  *
- * The display preferences live in the external store in lib/display-prefs, so
- * the attributes on <html> stay the single source of truth and the pre-paint
- * script can set them before React ever runs.
+ * The display settings (larger text, light mode, high contrast) are shown as
+ * three labelled buttons wherever the bar has room for them. Where it does
+ * not, one labelled "Display" button opens a panel holding the same three
+ * settings at full size. Three unlabelled icons on a phone would be a puzzle
+ * for exactly the people the settings exist for.
+ *
+ * Which layout is used is decided in header.css by the width of the header,
+ * measured in ems, so that the larger-text setting moves the breakpoints with
+ * it and the bar never overflows.
  */
 export function Header() {
-  const { mode, textSize } = useSyncExternalStore(
-    subscribe,
-    getSnapshot,
-    getServerSnapshot
-  );
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [panel, setPanel] = useState<Panel>(null);
   const [scrolled, setScrolled] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"register" | "signin">("register");
   const session = useSession();
+  const pathname = usePathname();
+
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const displayButtonRef = useRef<HTMLButtonElement>(null);
+  const displayPanelRef = useRef<HTMLDivElement>(null);
 
   function openAuth(mode: "register" | "signin") {
     setAuthMode(mode);
     setAuthOpen(true);
-    setMenuOpen(false);
+    setPanel(null);
   }
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
-
-  // Adopt whatever the pre-paint script already applied, so the toggles report
-  // the theme the visitor is actually looking at.
-  useEffect(syncFromDom, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -63,67 +63,78 @@ export function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Escape closes the mobile menu and returns focus to the control that
-  // opened it, so keyboard users are never stranded inside a closed panel.
+  // Escape closes whichever panel is open and returns focus to the control
+  // that opened it, so keyboard users are never stranded inside a closed panel.
   useEffect(() => {
-    if (!menuOpen) return;
+    if (!panel) return;
+    const opener = panel === "menu" ? menuButtonRef : displayButtonRef;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setMenuOpen(false);
-        menuButtonRef.current?.focus();
+        setPanel(null);
+        opener.current?.focus();
       }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [menuOpen]);
+  }, [panel]);
+
+  // The display panel sits below the whole bar, after the other buttons in tab
+  // order. Moving focus into it on opening means the next thing a keyboard or
+  // screen-reader user meets is the setting they asked for.
+  useEffect(() => {
+    if (panel === "display") {
+      displayPanelRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
+    }
+  }, [panel]);
+
+  const toggle = (which: Exclude<Panel, null>) => setPanel((open) => (open === which ? null : which));
+
+  /**
+   * Tells assistive technology, and the stylesheet, where the visitor is:
+   * "page" on the link to this very page, "true" on the link to the section it
+   * belongs to (Services, while looking at one service). Links to a part of the
+   * home page are never marked.
+   */
+  function currentFor(href: string): "page" | "true" | undefined {
+    if (href.includes("#")) return undefined;
+    if (pathname === href) return "page";
+    return pathname.startsWith(`${href}/`) ? "true" : undefined;
+  }
 
   return (
     <header className={`site${scrolled ? " scrolled" : ""}`}>
       <div className="site-inner">
         <Link className="logo" href="/">
           <LogoMark />
-          Passionate Taskers
+          {SITE.name}
         </Link>
 
         <nav className="primary" aria-label="Primary">
           {NAV.map((item) => (
-            <a key={item.href} href={item.href}>
+            <Link key={item.href} href={item.href} aria-current={currentFor(item.href)}>
               {item.label}
-            </a>
+            </Link>
           ))}
         </nav>
 
-        <div className="a11y-toggles" role="group" aria-label="Display preferences">
-          <button
-            className="a11y-btn"
-            type="button"
-            aria-pressed={textSize === "lg"}
-            aria-label="Larger text"
-            onClick={() => setTextSize(textSize === "lg" ? "normal" : "lg")}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-              <path d="M4 18L9 6h1l5 12M5.5 14h8" />
-              <path d="M17 18l3-8 3 8M18.5 15.5h3" />
-            </svg>
-            <span className="a11y-btn__label">Larger text</span>
-            <span className="a11y-btn__short" aria-hidden="true">Aa</span>
-          </button>
-          <button
-            className="a11y-btn"
-            type="button"
-            aria-pressed={mode === "light"}
-            aria-label={mode === "light" ? "Dark mode" : "Light mode"}
-            onClick={() => setMode(mode === "light" ? "dark" : "light")}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" />
-              <path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none" />
-            </svg>
-            <span className="a11y-btn__label">
-              {mode === "light" ? "Dark mode" : "Light mode"}
-            </span>
-          </button>
+        {/* Wide screens: the three settings, in the bar. */}
+        <div className="display-inline">
+          <DisplayControls />
         </div>
+
+        {/* Narrower screens: one labelled button that opens the same settings. */}
+        <button
+          ref={displayButtonRef}
+          type="button"
+          className="display-btn"
+          aria-expanded={panel === "display"}
+          aria-controls="displayPanel"
+          aria-label="Display: text size and colours"
+          onClick={() => toggle("display")}
+        >
+          <Icon name="text-size" />
+          <span className="display-btn__label">Display</span>
+        </button>
 
         {/* Wrapped so the whole control (including Magnetic's own element) can
             be hidden on narrow screens, where the menu takes over. */}
@@ -174,28 +185,49 @@ export function Header() {
           ref={menuButtonRef}
           type="button"
           className="menu-btn"
-          aria-expanded={menuOpen}
-          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={panel === "menu"}
+          aria-label={panel === "menu" ? "Close menu" : "Open menu"}
           aria-controls="mobileMenu"
-          onClick={() => setMenuOpen((o) => !o)}
+          onClick={() => toggle("menu")}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-            {menuOpen ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+            {panel === "menu" ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
           </svg>
-          <span className="menu-btn__label">{menuOpen ? "Close" : "Menu"}</span>
+          <span className="menu-btn__label">{panel === "menu" ? "Close" : "Menu"}</span>
         </button>
       </div>
 
-      <div className="mobile-menu" id="mobileMenu" hidden={!menuOpen}>
+      <div
+        className="display-panel"
+        id="displayPanel"
+        ref={displayPanelRef}
+        hidden={panel !== "display"}
+      >
+        <p className="display-panel__title">Text size and colours</p>
+        <DisplayControls variant="panel" />
+        <p className="display-panel__note">
+          Your choices are remembered on this device.{" "}
+          <Link href="/accessibility" onClick={() => setPanel(null)}>
+            More about accessibility
+          </Link>
+        </p>
+      </div>
+
+      <div className="mobile-menu" id="mobileMenu" hidden={panel !== "menu"}>
         <nav aria-label="Mobile">
           {NAV.map((item) => (
-            <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={currentFor(item.href)}
+              onClick={() => setPanel(null)}
+            >
               {item.label}
-            </a>
+            </Link>
           ))}
         </nav>
         {session ? (
-          <button className="btn btn-outline" type="button" onClick={() => { signOut(); setMenuOpen(false); }}>
+          <button className="btn btn-outline" type="button" onClick={() => { signOut(); setPanel(null); }}>
             Sign out of {session.name.split(" ")[0]}&apos;s account
           </button>
         ) : (

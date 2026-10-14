@@ -5,7 +5,7 @@
 > No prior knowledge of the project is assumed.
 
 Owner / sole developer: **Intisar** (intisarshahoud@gmail.com)
-Last updated: **2026-09-14**
+Last updated: **2026-10-14**
 Repo: `passionate-taskers/` inside `D:\web projects  with claude\`
 
 ---
@@ -43,8 +43,34 @@ were built for typing, sighted users, and retrofitting that is expensive for the
 
 ## 3. Current status — what actually exists
 
-A single-page, production-quality **landing page** at `/`, built with Next.js.
-It is not deployed yet; it runs locally.
+A production-quality **landing page** at `/`, service and booking pages, and
+four information pages, built with Next.js. It is not deployed yet; it runs
+locally.
+
+**Blueprint Stage A (2026-09-30).** The plan in
+`.claude/milestones/00-blueprint-gap-plan.md` (from the blueprint
+`.claude/One_Updated_Passionate_Tasker_GPT.docx`) was applied, apart from the
+brand decisions still waiting on Intisar (colours, fonts, name, hero autoplay):
+
+- **Display settings:** high contrast joins larger text and light mode. The
+  header shows the three as labelled buttons where there is room, and one
+  "Display" button opening a panel of the same three where there is not. See
+  section 11.
+- **New pages:** `/how-it-works`, `/trust` (trust and safety), `/accessibility`
+  (mission, what works, known limitations), `/about`. Shell and blocks in
+  `src/features/info/`.
+- **Home page:** the positioning line above the headline; five steps (tell us,
+  match, talk, track, approve); "Bigger jobs, one stage at a time" (labelled
+  planned); "What you pay, and what happens if something goes wrong"; eight
+  questions with answers. Section order in `src/app/(marketing)/page.tsx`.
+- **Honest wording:** every check is named by its badge (`src/data/trust.ts`).
+  Removed claims the first release cannot keep: payment "held until you
+  confirm", "enhanced DBS", "Gas Safe verified". At launch customers pay the
+  tradesperson directly; card payments and staged jobs are planned.
+- **Search:** titles, descriptions, canonical links and share cards on every
+  page; `robots.txt`; `sitemap.xml`; structured data. See section 12.
+- **Contact:** there is no inbox yet, and the pages say so. Set
+  `SITE.contactEmail` in `src/lib/site.ts` and every contact route shows it.
 
 The page was rebuilt on 2026-09-07 around the marketplace structure TaskRabbit
 UK uses — task-first hero search, service discovery, transparent price anchors,
@@ -54,8 +80,9 @@ palette and type. The teardown it was built against is
 
 Sections on the page, in order:
 
-1. **Header** — brand, five-item nav, the two accessibility toggles (larger
-   text, light/dark), waitlist CTA, and a hamburger menu below 860px
+1. **Header** — brand, five-item nav (services, how it works, trust and
+   safety, accessibility, for tradespeople), the three display settings,
+   account buttons, and a menu button where the nav does not fit
 2. **Hero** — a background playlist of trade clips (plumber, electrician,
    home repairs) that crossfade and loop behind the message and search. The
    text sits on the left over a gradient that leaves the right of the video
@@ -63,19 +90,23 @@ Sections on the page, in order:
    four-item trust strip. The video autoplays muted for every visitor, including reduced-motion
    setups (Intisar's decision, 2026-09-14), always has a labelled pause control
    (WCAG 2.2.2), and remembers a pause so it never autoplays on that visitor again
-3. **Services** — eight category cards; the three launch trades are marked
-   "Available now" and the other five "Coming soon"
-4. **Popular jobs** — filterable price-anchor cards with photos ("from £54",
+3. **How it works** — five steps, pinned scroll-scrub only where all five fit
+   in one row on a tall enough screen
+4. **Services** — the tabbed service browser (see below)
+5. **Popular jobs** — filterable price-anchor cards with photos ("from £54",
    typical duration)
-5. **How it works** — three steps, pinned scroll-scrub on wide screens only
-6. **Trust and safety** — ID/DBS, trade-body verification, insurance and payment
-7. **Accessibility** — "Not a setting we added later", pointing at the live toggles
+6. **Trust and safety** — four checks, each headed by its badge wording
+7. **Accessibility** — "Not a setting we added later", linking to /accessibility
 8. **Reviews** — six five-star sample reviews with photo avatars and a rating
    summary. The section states in its own copy that these are samples, because
    we have not launched and there are no real reviews to show
-9. **For tradespeople** — supply-side benefits and a stat card
-10. **Waitlist** — role toggle (customer / tradesperson) + email + postcode
-11. **Footer** — four columns plus a pre-launch disclaimer
+9. **Bigger jobs** — jobs in stages, labelled planned, with an example
+10. **Paying and problems** — price agreed first, pay the tradesperson
+    directly, what happens if something goes wrong
+11. **For tradespeople** — supply-side benefits and a stat card
+12. **Questions** — eight questions, React Aria disclosures
+13. **Waitlist** — role toggle (customer / tradesperson) + email + postcode
+14. **Footer** — four columns plus a pre-launch disclaimer
 
 The header carries the account state: Sign in / Create account when signed out,
 and a name chip with sign-out when signed in.
@@ -196,8 +227,8 @@ are real people who have not agreed to front our reviews.
 longer used by the page. They are kept for the moment in case a hero video
 returns.
 
-Git: one commit (`Initial commit: Passionate Taskers landing page`). Everything
-described above is currently uncommitted.
+Git: see `git log`; work is committed on `main` and pushed to
+https://github.com/intisarshahoud-wq/passionateTasker.
 
 ---
 
@@ -326,7 +357,12 @@ skew toward desktop and laptop.
 
 1. Tokens are plain CSS custom properties on `:root`.
 2. Light mode overrides them under `html[data-mode="light"]`.
-3. They are exposed to Tailwind through an **`@theme inline`** block, which is
+3. High contrast overrides them under `html[data-contrast="high"]` (white on
+   black) and `html[data-mode="light"][data-contrast="high"]` (black on white).
+   The few rules that need more than a colour swap (solid header, underlined
+   links, outlined empty stars, a solid panel behind the hero text) are in
+   `src/styles/contrast.css`.
+4. They are exposed to Tailwind through an **`@theme inline`** block, which is
    why classes like `bg-surface`, `text-ink-faint`, `border-line` and
    `font-brand-display` work.
 
@@ -373,11 +409,29 @@ These are the product, not polish:
   effects off, the video never moved at all. The safeguards: it is muted, the
   pause control is always there, and a pause is remembered (`pt-hero-video` in
   localStorage). Every other animation still respects the preference.
-- Toggle buttons carry real `aria-pressed` state.
+- Toggle buttons carry real `aria-pressed` state and a fixed name ("Light
+  mode", pressed or not — never a label that flips to "Dark mode").
 - Decorative SVG is `aria-hidden`; every interactive control has a label.
-- The header's larger-text toggle scales the root font size (100% → 118%), so
+- The larger-text setting scales the root font size (100% → 118%), so
   everything scales with it — never hard-code `px` font sizes.
+- **Three display settings** (larger text, light mode, high contrast) live in
+  `src/lib/display-prefs.ts` as data attributes on `<html>`, applied before
+  first paint by the script in `app/layout.tsx` (keep the two in step). High
+  contrast also follows the device's "more contrast" setting until the visitor
+  chooses. The controls are `components/layout/DisplayControls.tsx`, used in
+  the header and on /accessibility.
+- **Header layout steps are container queries in ems** (`header.css`), so
+  larger text moves every breakpoint with it. If a header label changes, run
+  `npm run pages` in `.claude/tools`.
+- State is never shown by colour alone: pressed settings are filled, edged and
+  ticked; the current nav link keeps its underline; staged-job states are words.
+- Motion limits: hover lifts at most 4px; scroll entrances at most 12px and
+  400ms, once; nothing moves on hover with reduced motion (lists in
+  `interaction.css` and at the end of `globals.css`).
 - Effects that need a mouse are gated behind `(pointer: fine)`.
+- **Never claim what is not true yet.** Badges say what was checked
+  (`src/data/trust.ts`); planned features say "planned"; there is no contact
+  inbox until `SITE.contactEmail` is set.
 
 ---
 
@@ -390,29 +444,41 @@ client component, and one 866-line stylesheet held every section's styles.
 ```
 passionate-taskers/src/
 ├── app/                        Routes only. No product logic lives here.
-│   ├── layout.tsx              Root: <html>, fonts, metadata, pre-paint display-prefs script
-│   ├── globals.css             Tokens + base styles; imports every feature stylesheet in cascade order
+│   ├── layout.tsx              Root: <html lang="en-GB">, fonts, default metadata, pre-paint display-prefs script
+│   ├── globals.css             Tokens (incl. high contrast) + base styles; imports every stylesheet in cascade order
+│   ├── robots.ts, sitemap.ts   robots.txt and sitemap.xml (booking steps left out)
 │   └── (marketing)/            Route group for public pages (brackets keep it out of the URL)
 │       ├── layout.tsx          Shared shell: skip link, header, footer, scroll bar, assistant
-│       ├── page.tsx            The landing page: puts sections in order, nothing else
+│       ├── page.tsx            The landing page: section order, metadata, JSON-LD, nothing else
 │       ├── services/           /services and /services/[category] (thin routes)
-│       └── book/               /book/[category]/[service] (thin route)
+│       ├── book/               /book/[category]/[service] (thin route, noindex)
+│       └── how-it-works/, trust/, accessibility/, about/   Thin routes for the information pages
 ├── features/                   One folder per product area: components, logic and styles together
 │   ├── landing/                The landing page sections, plus hero.css and sections.css
+│   ├── info/                   Information pages: InfoPage shell, the four pages, StagedJobExample, ContactRoute, info.css
 │   ├── services/               ServiceExplorer (landing tabs), CategoryView, ServicesIndex, Breadcrumbs
 │   ├── booking/                BookingFlow (four steps + confirmation), BookingPage, draft.ts, understand.ts + voice-guide.ts (book by voice), booking.css
 │   ├── job-post/               TaskSearch, structure-job.ts (sentence to job post), voice-request.ts (hero voice conversation), job-post.css
 │   ├── assistant/              AssistantChat, engine.ts (the rule engine), assistant.css
 │   └── auth/                   AuthDialog, useSession, demo-auth.ts (DEMO ONLY), auth.css
 ├── components/                 Shared building blocks that know nothing about any one feature
-│   ├── ui/                     Icon, Stars, LogoMark
+│   ├── ui/                     Icon, Stars, LogoMark, FaqList (React Aria disclosures), JsonLd
 │   ├── motion/                 Reveal, RevealGroup, RevealItem, MotionProvider
 │   ├── effects/                Magnetic, CursorGrid (adapted from React Bits)
-│   └── layout/                 Site chrome: Header, Footer, ScrollProgress, header.css, footer.css
-├── lib/                        Browser helpers with no UI: display-prefs.ts, speech.ts
-├── data/                       services.ts (the catalogue), taskers.ts (sample profiles), marketplace.ts (other mock data)
-└── styles/                     utilities.css: small site-wide utility classes
+│   └── layout/                 Site chrome: Header, DisplayControls, Footer, ScrollProgress, header.css, footer.css
+├── lib/                        No UI: display-prefs.ts, speech.ts, site.ts (name, positioning, contact), seo.ts (server: metadata, JSON-LD, site URL)
+├── data/                       services.ts (catalogue), taskers.ts (samples), trust.ts (the checks and badge wording),
+│                               how-it-works.ts (steps, paying, staged jobs), faqs.ts, marketplace.ts (other mock data)
+└── styles/                     utilities.css (links, status tag, FAQ), contrast.css (high contrast extras), interaction.css (hover timing)
 ```
+
+**Search.** Every page sets its metadata with `pageMetadata()` from
+`lib/seo.ts`: title (the root layout adds " | Passionate Taskers"), description,
+canonical link, share card. Structured data is written with the helpers in the
+same file and rendered by `components/ui/JsonLd`. Rule: it never says more than
+the page shows, so no prices, ratings, reviews or service areas until they are
+real. **Set `NEXT_PUBLIC_SITE_URL` when deploying**, or canonical links and the
+sitemap point at localhost.
 
 ### Where new code goes
 
@@ -461,12 +527,16 @@ passionate-taskers/src/
 - **Next.js 16 is newer than most tutorials and most AI training data.** When in
   doubt, read the guides in `node_modules/next/dist/docs/` rather than relying on
   remembered Next.js patterns.
-- **Never push to a remote.** Intisar performs every push himself so the GitHub
-  contribution history is entirely his own. Commit locally, then hand him the command.
+- **Push only when Intisar asks, in that conversation.** Otherwise commit
+  locally and hand him the command.
 - **No AI attribution in commits** — no `Co-Authored-By` trailer, no
   "Generated with..." footer.
-- AI-tooling files (`CLAUDE.md`, `AGENTS.md`, `.mcp.json`, `.claude/`) are
-  intentionally listed in `.gitignore` and kept out of the repo's history.
+- `.claude/` (milestones, plans, skills, browser checks, handover) is committed
+  in the repo since 2026-10-14, at Intisar's request. The copy Claude Code reads
+  is the workspace one (`D:\web projects  with claude\.claude\`); copy it into
+  the repo before committing. `.claude/tools/node_modules`, the check
+  screenshots and the voice transcript stay ignored. `CLAUDE.md`, `AGENTS.md`
+  and `.mcp.json` are still ignored.
 - Commits are authored as `Intisar <intisarshahoud@gmail.com>`.
 - Tailwind v4 has been installed since the initial scaffold. If someone says
   "add Tailwind" — it is already there, check before acting.
@@ -485,6 +555,13 @@ Everything below lives in the parent folder, `D:\web projects  with claude\`:
 - **`.claude/skills/ui-ux-design/`** and **`.claude/skills/logo-design/`** —
   project-specific design guidance (user psychology, premium branding,
   accessibility checks, logo constraints), used when working with Claude Code.
+- **`.claude/One_Updated_Passionate_Tasker_GPT.docx`** — the blueprint (product,
+  brand, accessibility, technology, growth), 29 September 2026.
+- **`.claude/milestones/00-blueprint-gap-plan.md`** — what the blueprint asks for
+  that is not built, the decisions it needs (D1 to D9), and the build order in
+  stages A to H. Stage A is done apart from the brand decisions.
+
+The `.claude/` items are also committed in this repo (see section 13).
 
 ---
 
@@ -506,12 +583,15 @@ Everything below lives in the parent folder, `D:\web projects  with claude\`:
 
 ## 16. If you're picking this up, start here
 
-1. Run it (section 4) and click the two header toggles — larger text, and light
-   mode. That is the product thesis in miniature.
+1. Run it (section 4) and try the three display settings in the header —
+   larger text, light mode, high contrast. That is the product thesis in
+   miniature.
 2. Read section 12 (architecture and the rules), then open
    `src/app/(marketing)/page.tsx` — it is the landing page's section order and
    nothing else. Each section lives in `src/features/landing/`.
 3. Read section 5 (scope) and section 8 (the open backend decision) before
    proposing anything.
 4. The next real piece of work is Phase 1: decide the backend, then build the
-   data model and make the waitlist form actually save an email.
+   data model and make the waitlist form actually save an email. Open brand
+   decisions (colours, fonts, name, hero autoplay) are in
+   `.claude/milestones/00-blueprint-gap-plan.md`.

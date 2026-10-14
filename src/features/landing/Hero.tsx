@@ -3,25 +3,32 @@
 import { Fragment } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
+import type { IconName } from "@/data/marketplace";
 import { TRENDING, bookingHref } from "@/data/services";
+import { getCheck } from "@/data/trust";
 import { Icon } from "@/components/ui/Icon";
+import { SITE } from "@/lib/site";
 import { HeroMedia } from "./HeroMedia";
 import { TaskSearch } from "@/features/job-post/TaskSearch";
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
 
+/*
+ * Entrances stay inside the motion limits the site works to: a fade with at
+ * most 12px of travel, finished within 400ms, played once.
+ */
 const container = {
   hidden: {},
   show: { transition: { staggerChildren: 0.08, delayChildren: 0.04 } },
 };
 const item = {
   hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: easeOut } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: easeOut } },
 };
 
 const headlineContainer = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.035, delayChildren: 0.1 } },
+  show: { transition: { staggerChildren: 0.03, delayChildren: 0.08 } },
 };
 const headlineWord = {
   hidden: { opacity: 0, y: 6, filter: "blur(6px)" },
@@ -29,18 +36,23 @@ const headlineWord = {
     opacity: 1,
     y: 0,
     filter: "blur(0px)",
-    transition: { duration: 0.45, ease: easeOut },
+    transition: { duration: 0.4, ease: easeOut },
   },
 };
 
 const LINE_1 = ["Tell", "us", "what", "needs", "fixing."];
 const LINE_2 = ["We’ll", "find", "who", "can", "fix", "it."];
 
-const TRUST_STRIP = [
-  { icon: "badge" as const, label: "ID and DBS checked" },
-  { icon: "shield" as const, label: "Gas Safe and NICEIC verified" },
-  { icon: "card" as const, label: "Insured on every job" },
-  { icon: "mic" as const, label: "Works by voice, end to end" },
+/**
+ * The checks, in the exact words a profile's badges use (data/trust.ts), so
+ * the first promise on the page says what is checked rather than "verified".
+ */
+const TRUST_STRIP: { icon: IconName; label: string }[] = [
+  ...(["identity", "insurance", "registration"] as const).map((id) => {
+    const check = getCheck(id);
+    return { icon: check.icon, label: check.badge };
+  }),
+  { icon: "mic", label: "Works by voice, end to end" },
 ];
 
 /** A few of the most-booked jobs, each a quick way straight into booking. */
@@ -61,10 +73,12 @@ export function Hero() {
 
       <div className="wrap hero-content">
         <motion.div className="hero-copy" variants={container} initial="hidden" animate="show">
-            <motion.span className="eyebrow" variants={item}>
+            {/* The line that says what we are trying to be. A paragraph, not
+                part of the heading: the h1 stays the promise to the visitor. */}
+            <motion.p className="eyebrow hero-positioning" variants={item}>
               <span className="dot" aria-hidden="true" />
-              Accessibility-first, from day one — now in early access
-            </motion.span>
+              {SITE.positioning}
+            </motion.p>
 
             <motion.h1 className="hero-title" variants={headlineContainer}>
               {LINE_1.map((word, i) => (
@@ -90,7 +104,7 @@ export function Hero() {
 
             <motion.p className="hero-lede" variants={item}>
               Describe the job in your own words, by voice or by text. We turn it into a proper
-              job post and match you with verified, insured tradespeople near you.
+              job post and match you with identity-verified, insured tradespeople near you.
             </motion.p>
 
             <motion.div variants={item}>
@@ -121,7 +135,7 @@ export function Hero() {
           className="trust-strip"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: easeOut, delay: 0.5 }}
+          transition={{ duration: 0.4, ease: easeOut, delay: 0.4 }}
         >
           {TRUST_STRIP.map((point) => (
             <li key={point.label}>

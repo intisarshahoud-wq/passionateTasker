@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { SERVICE_CATEGORIES, getService } from "@/data/services";
+import { SERVICE_CATEGORIES, bookingHref, getService } from "@/data/services";
 import { BookingPage } from "@/features/booking/BookingPage";
+import { pageMetadata } from "@/lib/seo";
 
 // Every bookable job is known at build time; anything else is a 404.
 export const dynamicParams = false;
@@ -18,10 +19,13 @@ export async function generateMetadata(
   const { category, service } = await props.params;
   const found = getService(category, service);
   if (!found) return {};
-  return {
-    title: `Book ${found.service.name} — Passionate Taskers`,
+  return pageMetadata({
+    title: `Book ${found.service.name}`,
     description: found.service.summary,
-  };
+    path: bookingHref(found.category.slug, found.service.slug),
+    // A form, not a page to land on from a search: kept out of search results.
+    index: false,
+  });
 }
 
 export default async function BookPage(props: PageProps<"/book/[category]/[service]">) {

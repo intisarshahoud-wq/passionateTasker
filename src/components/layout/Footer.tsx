@@ -1,14 +1,20 @@
 import Link from "next/link";
 import { LogoMark } from "@/components/ui/LogoMark";
 import { SERVICE_CATEGORIES, categoryHref } from "@/data/services";
+import { SITE } from "@/lib/site";
 
+/*
+ * Only pages that exist. Privacy, terms and a contact page are written before
+ * launch (milestone 01); until then a link to them would go nowhere.
+ */
 const COLUMNS = [
   {
     heading: "Company",
     links: [
-      { href: "/#how", label: "How it works" },
-      { href: "/#trust", label: "Trust and safety" },
-      { href: "/#accessibility", label: "Accessibility statement" },
+      { href: "/about", label: "About" },
+      { href: "/how-it-works", label: "How it works" },
+      { href: "/trust", label: "Trust and safety" },
+      { href: "/accessibility", label: "Accessibility" },
       { href: "/#waitlist", label: "Join the waitlist" },
     ],
   },
@@ -16,7 +22,7 @@ const COLUMNS = [
     heading: "For tradespeople",
     links: [
       { href: "/#pros", label: "Why join" },
-      { href: "/#trust", label: "Verification and checks" },
+      { href: "/trust#for-tradespeople", label: "Checks you will need to pass" },
       { href: "/#waitlist", label: "Sign up" },
     ],
   },
@@ -29,7 +35,7 @@ export function Footer() {
         <div className="footer-brand">
           <Link className="logo" href="/">
             <LogoMark size={28} />
-            Passionate Taskers
+            {SITE.name}
           </Link>
           <p className="footer-tagline">
             The voice-first way to find a tradesperson you can actually trust — built to be
@@ -57,7 +63,7 @@ export function Footer() {
             <ul>
               {column.links.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href}>{link.label}</a>
+                  <Link href={link.href}>{link.label}</Link>
                 </li>
               ))}
             </ul>
@@ -66,7 +72,7 @@ export function Footer() {
       </div>
 
       <div className="wrap footer-base">
-        <p>© 2026 Passionate Taskers. Built accessibility-first.</p>
+        <p>© 2026 {SITE.name}. Built accessibility-first.</p>
         <p>
           Pre-launch design preview. Prices shown are indicative and no bookings can be made yet.
         </p>

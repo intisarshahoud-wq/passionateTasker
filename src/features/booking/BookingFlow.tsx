@@ -362,7 +362,10 @@ function Flow({ categorySlug, serviceSlug }: { categorySlug: string; serviceSlug
         <ol className="booking-done__next">
           <li>Your tasker confirms the booking, usually within the hour.</li>
           <li>You agree the details in one message thread, by voice or by text.</li>
-          <li>The work is done, and you confirm it before any payment is released.</li>
+          <li>
+            When the work is done, you pay your tasker the price you agreed, and you can leave
+            a review.
+          </li>
         </ol>
 
         <div className="booking__nav">
@@ -537,9 +540,10 @@ function Flow({ categorySlug, serviceSlug }: { categorySlug: string; serviceSlug
           {step === 1 && (
             <>
               <p className="booking__lede">
-                Three checked tradespeople near <strong>{draft.postcode.trim()}</strong> who do this
-                job. <strong>These are sample profiles:</strong> we have not launched, so they are
-                illustrations of what you will see, not real people.
+                Three tradespeople near <strong>{draft.postcode.trim()}</strong> who do this job,
+                each showing the checks it has passed. <strong>These are sample profiles:</strong>{" "}
+                we have not launched, so they are illustrations of what you will see, not real
+                people.
               </p>
               <RadioGroup
                 id={fid("taskerId")}
@@ -557,7 +561,10 @@ function Flow({ categorySlug, serviceSlug }: { categorySlug: string; serviceSlug
                       key={t.id}
                       value={t.id}
                       className="tasker"
-                      aria-label={`${t.name}, rated ${t.rating} out of 5 from ${t.reviews} reviews, £${t.hourlyRate} an hour, sample profile`}
+                      // The label replaces the card's text for a screen reader, so
+                      // it has to carry the checks too: they are the reason to
+                      // choose one tasker over another.
+                      aria-label={`${t.name}, rated ${t.rating} out of 5 from ${t.reviews} reviews, £${t.hourlyRate} an hour. ${t.badges.join(", ")}. Sample profile`}
                     >
                       {({ isSelected }) => (
                         <>

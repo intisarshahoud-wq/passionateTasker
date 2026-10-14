@@ -121,6 +121,55 @@ const PATHS: Record<IconName, React.ReactNode> = {
       <circle cx="12" cy="10" r="2.3" />
     </>
   ),
+  id: (
+    <>
+      <rect x="2.5" y="5" width="19" height="14" rx="2" />
+      <circle cx="8.5" cy="10.5" r="2" />
+      <path d="M5.5 15.5c.6-1.5 1.7-2.2 3-2.2s2.4.7 3 2.2M14.5 10h4M14.5 13.5h3" />
+    </>
+  ),
+  clipboard: (
+    <>
+      <rect x="5" y="4.5" width="14" height="16.5" rx="2" />
+      <path d="M9 4.5V3h6v1.5M9 13.5l2 2 4-4.5" />
+    </>
+  ),
+  document: (
+    <>
+      <path d="M7 3h7l4 4v14H7z" />
+      <path d="M14 3v4h4M10 12.5h5M10 16.5h5" />
+    </>
+  ),
+  camera: (
+    <>
+      <path d="M4 8h3.5L9 5.5h6L16.5 8H20a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 20 19H4a1.5 1.5 0 0 1-1.5-1.5v-8A1.5 1.5 0 0 1 4 8z" />
+      <circle cx="12" cy="13" r="3.2" />
+    </>
+  ),
+  alert: (
+    <>
+      <path d="M12 4 21 19.5H3z" />
+      <path d="M12 10v4.5M12 17h.01" />
+    </>
+  ),
+  "text-size": (
+    <>
+      <path d="M3 18 8 6h1l5 12M4.7 14h7.6" />
+      <path d="M15.5 18l2.8-7h.9l2.8 7M16.6 15.5h4.3" />
+    </>
+  ),
+  sun: (
+    <>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4" />
+    </>
+  ),
+  contrast: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none" />
+    </>
+  ),
 };
 
 export function Icon({

@@ -5,8 +5,8 @@ electricians and handymen — built so that blind, low-vision and elderly users
 can complete every task, not as a later accessibility pass.
 
 You describe the problem in plain words, by voice or by text. The product turns
-that into a structured job post and matches you with verified, insured
-tradespeople nearby.
+that into a structured job post and matches you with identity-verified,
+insured tradespeople nearby.
 
 **This repository is currently a frontend prototype.** There is no backend, no
 database and no real authentication. See [Status](#status).
@@ -34,7 +34,8 @@ Other scripts:
 
 ## Status
 
-The landing page is complete and interactive. Everything behind it is not built
+The landing page, service pages, booking preview and information pages are
+complete and interactive. Everything behind it is not built
 yet — deliberately, so the visual direction and the core flow could be validated
 before committing to a backend stack.
 
@@ -47,7 +48,10 @@ before committing to a backend stack.
 - Service discovery, price-anchored job cards, trust and verification content,
   reviews, and a tradesperson section.
 - Registration and sign-in, including a Google option — all demo only, see below.
-- Light/dark themes and a larger-text mode, both remembered between visits.
+- Three display settings — larger text, light mode, high contrast — remembered
+  between visits; high contrast also follows the device setting.
+- Information pages: how it works, trust and safety, accessibility (with known
+  limitations), about. Plus a sitemap, robots.txt, and structured data.
 - Responsive from 320px up, with no horizontal overflow at any width tested.
 
 **Not built:**
@@ -83,6 +87,7 @@ src/
     (marketing)/       public pages: shared layout + the landing page
   features/            one folder per product area, with its own styles
     landing/           landing page sections
+    info/              how it works, trust and safety, accessibility, about
     job-post/          task search and sentence-to-job-post logic
     assistant/         chat assistant
     services/          service browser and category pages
@@ -90,7 +95,7 @@ src/
     auth/              demo account store and sign-in dialog
   components/          shared pieces: ui/, motion/, effects/, layout/
   lib/                 browser helpers: display preferences, speech
-  data/                mock data, shaped like a future API response
+  data/                catalogue, checks, steps, questions, and mock data shaped like a future API response
   styles/              site-wide utility classes
 public/
   videos/              hero clips: plumber, electrician, handyman

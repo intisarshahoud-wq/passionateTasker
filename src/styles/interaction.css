@@ -9,6 +9,15 @@
  * Imported last in globals.css so these timings win over each component's own
  * transition shorthand. Colours and hover styles themselves stay in the
  * component stylesheets; only the timing lives here.
+ *
+ * The motion limits the site works to (checked on 2026-09-30):
+ *  - A hover may lift a card or button by 4px at most.
+ *  - Things that fade in as you scroll travel 12px at most and take 400ms or
+ *    less, once.
+ *  - Effects that follow the pointer run only with a mouse or trackpad, never
+ *    on touch, and never when reduced motion is asked for.
+ *  - With reduced motion, nothing moves on hover at all (see the end of this
+ *    file). Colours and borders still fade, because a fade moves nothing.
  */
 
 :root {
@@ -23,6 +32,7 @@
 .service-card,
 .category-card,
 .trust-card,
+.info-card,
 .chip,
 .tasker,
 .choice,
@@ -40,6 +50,7 @@
 .service-card:hover,
 .category-card:hover,
 .trust-card:hover,
+.info-card:hover,
 .chip:hover,
 .tasker:hover,
 .choice:hover,
@@ -50,19 +61,27 @@
 }
 
 /*
- * Reduced motion: the cards stop lifting and the images stop zooming, so
- * nothing jumps. The border and colour fade above still happens (the global
- * reduced-motion rule keeps fades), so it is still clear what is under the
- * pointer.
+ * Reduced motion: the cards and buttons stop lifting and the images stop
+ * zooming, so nothing jumps. The border and colour fade above still happens
+ * (the global reduced-motion rule keeps fades), so it is still clear what is
+ * under the pointer.
+ *
+ * Every hover that moves something has to be listed, here or (for the buttons
+ * and cards styled in globals.css itself, whose rules load after this file) in
+ * the matching block at the end of globals.css. The global reduced-motion rule
+ * only removes the animation of a move; without these the element would still
+ * jump to its lifted position, just instantly.
  */
 @media (prefers-reduced-motion: reduce) {
   .svc-card:hover,
   .service-card:hover,
   .category-card:hover,
   .trust-card:hover,
+  .info-card:hover,
   .chip:hover,
   .svc-chip:hover,
   .google-account:hover,
+  .assistant-launcher:active,
   .service-card:hover .service-card__img,
   .svc-card:hover .svc-card__cta svg {
     transform: none;

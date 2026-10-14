@@ -1,70 +1,184 @@
 /*
- * Site header: brand, nav, accessibility toggles, menu.
+ * Site header: brand, nav, display settings, account buttons, menu.
  *
  * Tokens only, no raw hex values: any new colour must be a token from
  * globals.css or a color-mix of one, so the light/dark toggle keeps working.
- * Imported by app/globals.css, whose import order is the cascade order.
+ * Imported by app/globals.css, whose import order is the cascade order. The
+ * header's base rules (bar, logo, nav links) are in globals.css, which loads
+ * after this file, so everything here is written as `header.site ...` to win
+ * on specificity rather than on order.
+ *
+ * HOW THE LAYOUT IS DECIDED
+ *
+ * By the width of the header itself, measured in ems (a container query), not
+ * by the width of the window in pixels (a media query). An em follows the text
+ * size. When a visitor turns on larger text, every breakpoint below moves out
+ * with the text, so the bar goes to its roomier layout sooner and never
+ * overflows. With pixel breakpoints it overflowed at several widths in
+ * larger-text mode, which is the one mode where that matters most.
+ *
+ * Narrowest first. Each step adds something once there is room for it:
+ *
+ *   under 24em   mark only · Display · menu icon
+ *   24em         the wordmark
+ *   39em         the word "Menu" beside the menu icon, roomier bar
+ *   45em         the account buttons
+ *   58em         the three display settings in the bar (Display button goes)
+ *   84em         the nav links in the bar (menu button goes)
+ *   90em         the separate "Sign in" button
+ *
+ * At normal text size 1em is 16px, so 58em is 928px and 84em is 1344px: just
+ * under the 1349px a 1366px laptop has left beside its scrollbar. Each step is
+ * set from the measured width of the bar's contents in its widest state
+ * (signed in, with a long first name), plus some room to spare. If a label is
+ * added or lengthened, re-run the header check in .claude/tools.
  */
 
-/* ---- Header additions ---- */
-
-/* The logo must never wrap — a two-line brand in a sticky bar eats the header. */
-.site-inner .logo { white-space: nowrap; }
-
-/* Below this the bar cannot hold labelled controls as well as the brand, so
-   the toggles and the menu go icon-only. Each keeps an aria-label, so nothing
-   is lost for a screen reader — only the visible text is dropped. */
-@media (max-width: 620px) {
-  .site-inner { gap: 8px; padding: 14px 16px; }
-  .site-inner .logo { font-size: 0.92rem; }
-  .a11y-btn__short { display: none; }
-  .a11y-btn { padding: 8px; }
-  .menu-btn__label { display: none; }
-  .menu-btn { padding: 8px; }
+header.site {
+  container: site-header / inline-size;
 }
 
-/* On the narrowest phones the wordmark is what has to give — the mark alone
+/* ---- The bar ---- */
+
+header.site .site-inner { gap: 6px; padding: 12px; }
+
+/* The logo must never wrap — a two-line brand in a sticky bar eats the header.
+   On the narrowest phones the wordmark is what has to give: the mark alone
    still identifies the site, and the controls must stay reachable. font-size:0
    rather than display:none so the link keeps its accessible name. */
-@media (max-width: 380px) {
-  .site-inner { gap: 6px; padding: 12px 12px; }
-  .site-inner .logo { font-size: 0; gap: 0; }
-  .site-inner .logo svg { width: 28px; height: 28px; }
+header.site .logo { white-space: nowrap; font-size: 0; gap: 0; }
+header.site .logo svg { width: 28px; height: 28px; }
+
+header.site nav.primary { display: none; gap: 18px; }
+header.site nav.primary a { white-space: nowrap; }
+/* The page (or section) you are on: the underline stays, so it is not colour alone. */
+header.site nav.primary a[aria-current] { color: var(--ink); }
+header.site nav.primary a[aria-current]::after { transform: scaleX(1); }
+
+header.site .display-inline { display: none; }
+header.site .header-cta { display: none; align-items: center; }
+header.site .header-signin { display: none; }
+
+/* A long first name must not push the bar wider than it was measured for. */
+header.site .account-chip__name {
+  max-width: 9ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.site-inner .header-cta { display: none; }
-@media (min-width: 720px) { .site-inner .header-cta { display: inline-flex; } }
+/* ---- Display and menu buttons ---- */
 
-.a11y-btn__short { display: none; }
-@media (max-width: 1080px) {
-  .a11y-btn__label { display: none; }
-  .a11y-btn__short { display: inline; }
-  /* The mode button has no short form, so it keeps its icon alone. */
-}
-
+.display-btn,
 .menu-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 44px;
   background: var(--surface);
   border: 1px solid var(--line);
   color: var(--ink);
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 0 12px;
   font-size: 0.85rem;
   font-weight: 600;
   font-family: var(--font-body);
   cursor: pointer;
+  transition: border-color 200ms var(--ease), color 200ms var(--ease);
 }
-.menu-btn svg { width: 18px; height: 18px; }
+.display-btn svg,
+.menu-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+.display-btn:hover,
 .menu-btn:hover { border-color: var(--accent); color: var(--accent-text); }
-@media (min-width: 860px) { .menu-btn { display: none; } }
+.display-btn[aria-expanded="true"],
+.menu-btn[aria-expanded="true"] { border-color: var(--accent); }
 
-.mobile-menu {
-  border-top: 1px solid var(--line);
-  padding: 16px 24px 22px;
+header.site .menu-btn__label { display: none; }
+
+/* ---- The three settings, in the bar ---- */
+
+.a11y-toggles { display: flex; gap: 6px; align-items: center; }
+
+.a11y-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-family: var(--font-body);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 200ms var(--ease), border-color 200ms var(--ease), background-color 200ms var(--ease);
+}
+.a11y-btn:hover { color: var(--ink); border-color: var(--accent); }
+
+/*
+ * On: filled, with a darker edge and a tick in the corner. Three signals, so
+ * the state does not depend on telling two colours apart.
+ */
+.a11y-btn[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent-text);
+  color: var(--accent-ink-on-accent);
+  font-weight: 600;
+}
+/* The tick: a dot in the corner with the tick cut out of it. Drawn with a mask
+   rather than a "✓" character, so it takes the theme's colours and a screen
+   reader is not handed a stray symbol after the button's name. */
+.a11y-btn[aria-pressed="true"]::before,
+.a11y-btn[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+}
+.a11y-btn[aria-pressed="true"]::before {
+  top: -8px;
+  right: -8px;
+  width: 20px;
+  height: 20px;
   background: var(--bg);
 }
+.a11y-btn[aria-pressed="true"]::after {
+  top: -6px;
+  right: -6px;
+  width: 16px;
+  height: 16px;
+  background: var(--ink);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.9 5.6L7.2 11 4.2 8.3l1-1.1 1.9 1.7 3.7-4.2z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.9 5.6L7.2 11 4.2 8.3l1-1.1 1.9 1.7 3.7-4.2z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* ---- Panels under the bar ---- */
+
+.display-panel,
+.mobile-menu {
+  border-top: 1px solid var(--line);
+  padding: 16px 16px 22px;
+  background: var(--bg);
+}
+
+.display-panel__title {
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.display-panel__note { margin: 14px 0 0; font-size: 0.9rem; color: var(--ink-soft); }
+.display-panel__note a {
+  color: var(--accent-text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  display: inline-block;
+  min-height: 24px;
+}
+
 .mobile-menu nav {
   display: flex;
   flex-direction: column;
@@ -79,6 +193,114 @@
   border-bottom: 1px solid var(--line);
 }
 .mobile-menu nav a:hover { color: var(--accent-text); }
+.mobile-menu nav a[aria-current] { font-weight: 600; color: var(--accent-text); }
 .mobile-menu .btn { width: 100%; }
-@media (min-width: 860px) { .mobile-menu { display: none; } }
 
+/* ---- The three settings, at full size ---- */
+
+/*
+ * Used in the Display panel above and on the accessibility page. Each row is
+ * one big button: what it is, what it does, and whether it is on.
+ */
+.display-options { display: grid; gap: 10px; max-width: 30rem; }
+
+.display-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-body);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 200ms var(--ease), background-color 200ms var(--ease);
+}
+.display-option:hover { border-color: var(--accent); }
+.display-option:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+.display-option__icon { width: 24px; height: 24px; flex-shrink: 0; color: var(--accent-text); }
+.display-option__text { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.display-option__label { font-size: 1.02rem; font-weight: 600; }
+.display-option__hint { font-size: 0.9rem; color: var(--ink-soft); line-height: 1.4; }
+
+.display-option__state {
+  flex-shrink: 0;
+  min-width: 3.4rem;
+  padding: 5px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+.display-option[aria-pressed="true"] {
+  border-color: var(--accent);
+  border-width: 2.5px;
+  /* Keep the text where it was: the thicker edge takes its room from the padding. */
+  padding: 9px 15px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+}
+.display-option[aria-pressed="true"] .display-option__state {
+  border-color: var(--accent-text);
+  background: var(--accent);
+  color: var(--accent-ink-on-accent);
+}
+
+/*
+ * Windows High Contrast and other forced-colour modes repaint every background,
+ * which would erase "filled means on". System colours put the difference back.
+ */
+@media (forced-colors: active) {
+  .a11y-btn[aria-pressed="true"],
+  .display-option[aria-pressed="true"] .display-option__state {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+  .a11y-btn[aria-pressed="true"]::before,
+  .a11y-btn[aria-pressed="true"]::after { display: none; }
+}
+
+/* ---- Layout steps, by the width of the header in ems ---- */
+
+@container site-header (min-width: 24em) {
+  header.site .site-inner { gap: 8px; padding: 12px 16px; }
+  header.site .logo { font-size: 0.92rem; gap: 10px; }
+}
+
+@container site-header (min-width: 39em) {
+  header.site .site-inner { gap: 16px; padding: 14px 24px; }
+  header.site .logo { font-size: 1.05rem; }
+  header.site .logo svg { width: 32px; height: 32px; }
+  header.site .menu-btn__label { display: inline; }
+  .display-panel,
+  .mobile-menu { padding: 18px 24px 24px; }
+}
+
+@container site-header (min-width: 45em) {
+  header.site .header-cta { display: inline-flex; }
+}
+
+@container site-header (min-width: 58em) {
+  header.site .display-inline { display: block; }
+  header.site .display-btn,
+  header.site .display-panel { display: none; }
+}
+
+@container site-header (min-width: 84em) {
+  header.site nav.primary { display: flex; }
+  header.site .menu-btn,
+  header.site .mobile-menu { display: none; }
+}
+
+@container site-header (min-width: 90em) {
+  header.site .header-signin { display: inline-flex; }
+}

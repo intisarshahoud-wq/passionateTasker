@@ -1,11 +1,15 @@
+import Link from "next/link";
 import { RevealGroup, RevealItem } from "@/components/motion/Reveal";
 import { Icon } from "@/components/ui/Icon";
-import { TRUST_POINTS } from "@/data/marketplace";
+import { CHECKS, PRELAUNCH_NOTE, RECHECK_NOTE } from "@/data/trust";
 
 /**
  * Trust is the product, not a section — this is the answer to "am I safe
  * letting this person into my home", so it sits directly after discovery and
  * before any ask.
+ *
+ * Each card is one check, headed by the exact words of the badge a profile
+ * will carry (data/trust.ts). No card says "trusted" or "verified" on its own.
  */
 export function TrustSection() {
   return (
@@ -21,20 +25,25 @@ export function TrustSection() {
         </div>
 
         <RevealGroup className="trust-grid" stagger={0.07} amount={0.2}>
-          {TRUST_POINTS.map((point) => (
-            <RevealItem as="article" className="trust-card" key={point.title}>
+          {CHECKS.map((check) => (
+            <RevealItem as="article" className="trust-card" key={check.id}>
               <span className="trust-card__icon" aria-hidden="true">
-                <Icon name={point.icon} />
+                <Icon name={check.icon} />
               </span>
-              <h3>{point.title}</h3>
-              <p>{point.body}</p>
+              <h3>{check.badge}</h3>
+              <p>{check.summary}</p>
             </RevealItem>
           ))}
         </RevealGroup>
 
         <p className="section-note">
-          Verification is carried out at sign-up and re-checked annually. We are pre-launch,
-          so these are the standards we are building to, not claims about work already done.
+          {RECHECK_NOTE} {PRELAUNCH_NOTE}
+        </p>
+
+        <p className="section-more">
+          <Link className="text-link" href="/trust">
+            See what each badge means, and what we do not check
+          </Link>
         </p>
       </div>
     </section>

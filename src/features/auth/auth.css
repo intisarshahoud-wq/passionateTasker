@@ -9,11 +9,10 @@
 
 /* ---- Header account state ---- */
 
+/* The separate Sign in button only shows on the widest bars (see header.css):
+   it is the first thing to give, because the dialog it opens is also reachable
+   from "Create account" and from the menu. */
 .header-signin { margin-right: 8px; }
-/* Between here and the nav breakpoint the bar is full; the separate Sign in
-   button drops first because the dialog it opens is also reachable from the
-   "Create account" panel and the mobile menu. */
-@media (max-width: 1380px) { .header-signin { display: none; } }
 
 .account-chip {
   display: inline-flex;

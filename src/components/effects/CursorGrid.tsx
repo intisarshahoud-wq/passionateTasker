@@ -9,6 +9,8 @@
  *    background canvas and would never see the cursor behind other elements).
  *  - default colour is the brand copper rather than upstream magenta.
  *  - honours prefers-reduced-motion by skipping the animation entirely.
+ *  - runs only with a mouse or trackpad: on a touch screen there is no pointer
+ *    to follow, and a glow that fires under a dragging finger is just noise.
  */
 
 import { useRef, useEffect } from "react";
@@ -123,6 +125,7 @@ const CursorGrid = ({
     const canvas = canvasRef.current;
     if (!container || !canvas) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!window.matchMedia("(pointer: fine)").matches) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;

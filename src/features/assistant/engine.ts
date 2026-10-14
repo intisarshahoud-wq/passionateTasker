@@ -20,6 +20,7 @@
  *   confidently is worse than asking one short question.
  */
 
+import { JOURNEY } from "@/data/how-it-works";
 import { CATEGORIES } from "@/data/services";
 import { structureJob, type StructuredJob } from "@/features/job-post/structure-job";
 
@@ -28,7 +29,9 @@ export type AssistantAction =
   | "text-larger"
   | "text-normal"
   | "light-mode"
-  | "dark-mode";
+  | "dark-mode"
+  | "contrast-high"
+  | "contrast-normal";
 
 export interface AssistantReply {
   /** The lead sentence. Must stand alone as an answer. */
@@ -52,6 +55,9 @@ function list(names: string[]): string {
   if (names.length <= 1) return names[0] ?? "";
   return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
 }
+
+/** A small number as a word, the way it would be said: "Five steps". */
+const COUNT_WORDS = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight"];
 
 export const GREETING: AssistantReply = {
   text: "Hello. Tell me what needs fixing, in your own words.",
@@ -108,17 +114,37 @@ const RULES: Rule[] = [
       action: "dark-mode",
     }),
   },
+  // Turning contrast off is matched first: "turn off high contrast" contains
+  // the words that turn it on.
+  {
+    test: /\b(normal contrast|less contrast|lower (the )?contrast|contrast off|(turn|switch) off (the )?(high )?contrast|(turn|switch) (the )?(high )?contrast off)\b/i,
+    reply: () => ({
+      text: "High contrast is off.",
+      points: ["Say high contrast to switch it back on."],
+      chips: ["Make the text larger", "Switch to light mode", "How does this work?"],
+      action: "contrast-normal",
+    }),
+  },
+  {
+    test: /\b(high contrast|more contrast|stronger contrast|higher contrast|increase (the )?contrast|contrast on)\b/i,
+    reply: () => ({
+      text: "Done. High contrast is on: black and white, with clearer edges.",
+      points: ["Say normal contrast to put it back."],
+      chips: ["Make the text larger", "Normal contrast", "What does it cost?"],
+      action: "contrast-high",
+    }),
+  },
   {
     test: /\b(blind|screen reader|voiceover|nvda|jaws|partially sighted|low vision|eyesight|eye sight|accessib|disab)/i,
     reply: () => ({
       text: "This site was built for people who cannot see it well, from the first day.",
       points: [
-        "Everything works by keyboard alone, with no mouse.",
+        "Everything is built to work by keyboard alone, with no mouse.",
         "You can describe a job by speaking instead of typing.",
-        "Ask me for larger text or light mode and I will change it for you.",
+        "Ask me for larger text, light mode or high contrast and I will change it for you.",
       ],
-      chips: ["Make the text larger", "Switch to light mode", "Can I speak instead?"],
-      link: { href: "/#accessibility", label: "Read the accessibility section" },
+      chips: ["Make the text larger", "Turn on high contrast", "Can I speak instead?"],
+      link: { href: "/accessibility", label: "Read about accessibility, and what does not work yet" },
     }),
   },
   {
@@ -131,6 +157,32 @@ const RULES: Rule[] = [
         "Stop stops me speaking straight away.",
       ],
       chips: ["What does it cost?", "How do you check tradespeople?", "Which trades do you cover?"],
+    }),
+  },
+  {
+    test: /\b(pay|paying|payment|payments|paid|card|cash|deposit|invoice|escrow)\b/i,
+    reply: () => ({
+      text: "When we open, you pay your tradesperson directly, after agreeing the price with them.",
+      points: [
+        "We do not take or hold your money, and there is no booking fee in early access.",
+        "Paying by card through the site, in stages for bigger jobs, is planned for later.",
+      ],
+      chips: ["What does it cost?", "What if something goes wrong?", "Is it safe?"],
+      link: { href: "/how-it-works#paying", label: "Read more about paying" },
+    }),
+  },
+  {
+    // Deliberately narrow. "My boiler has gone wrong" is a job to post, not a
+    // question about disputes, so a bare "gone wrong" must not land here.
+    test: /\b((if|when) (it|things|anything|something|a job|the job|the work) (goes|go|went) wrong|something (goes|went|has gone) wrong|dispute|refund|complaint|not happy with|unhappy with|bad job|poor job)\b/i,
+    reply: () => ({
+      text: "Start by messaging your tradesperson. Everything you agreed is in one thread.",
+      points: [
+        "If that does not fix it, you will be able to report it and a person will look into it.",
+        "The full process will be published before we open.",
+      ],
+      chips: ["How do I pay?", "Is it safe?", "How does this work?"],
+      link: { href: "/how-it-works#problems", label: "Read what happens if something goes wrong" },
     }),
   },
   {
@@ -162,27 +214,32 @@ const RULES: Rule[] = [
   },
   {
     test: /\b(safe|safety|trust|trusted|verified|verify|insured|insurance|dbs|background check|vetted|scam|qualified|licence|license|reliable)/i,
+    // The checks, in the same words as the badges on a profile (data/trust.ts).
+    // No "verified" or "vetted" on its own, and nothing about holding payments:
+    // no money moves through the site at the first release.
     reply: () => ({
-      text: "Every tradesperson is identity-checked and background-checked before they can take work.",
+      text: "Every tradesperson has their identity verified before they can take a job.",
       points: [
-        "We verify their trade body registration and their public liability insurance.",
-        "Your payment is held until you say the work is done.",
+        "We also check their public liability insurance, and see a basic DBS check.",
+        "Electricians doing certified work are looked up on their scheme’s public register.",
+        "We have not opened yet, so these are the checks every profile will have to pass.",
       ],
-      chips: ["What does it cost?", "How does this work?", "Join the waiting list"],
-      link: { href: "/#trust", label: "Read about trust and safety" },
+      chips: ["What does it cost?", "How do I pay?", "How does this work?"],
+      link: { href: "/trust", label: "Read what each badge means" },
     }),
   },
   {
     test: /\b(how does|how do|how it works|what happens|process|steps|explain|what is this|who are you|what do you do)\b/i,
     reply: () => ({
-      text: "Three steps, and no forms at any point.",
+      // The steps, counted and named from the same list the pages use.
+      text: `${COUNT_WORDS[JOURNEY.length] ?? JOURNEY.length} steps: ${list(JOURNEY.map((step) => step.title.toLowerCase()))}.`,
       points: [
-        "One: tell me what needs fixing, in ordinary words, by speaking or typing.",
-        "Two: I write the job post and match it to checked tradespeople near you.",
-        "Three: you get three good ones to choose from, not ninety.",
+        "Tell me what needs fixing, by speaking or typing, and I write the job post.",
+        "You get three tradespeople to choose from, and message them in one thread.",
+        "You can see where the job stands, and you say when it is finished.",
       ],
       chips: ["What does it cost?", "Is it safe?", "My kitchen tap is leaking"],
-      link: { href: "/#how", label: "See how it works" },
+      link: { href: "/how-it-works", label: "See each step in full" },
     }),
   },
   {
@@ -215,7 +272,7 @@ const RULES: Rule[] = [
       text: "There is no support line yet, because we have not launched.",
       points: [
         "Everything here is a working preview.",
-        "Leave your email on the waiting list and a real person will contact you.",
+        "A contact address will be published before the first job is booked.",
       ],
       chips: ["Join the waiting list", "How does this work?", "Which trades do you cover?"],
       link: { href: "/#waitlist", label: "Go to the waiting list" },
@@ -256,7 +313,7 @@ function jobReply(job: StructuredJob): AssistantReply {
       : "I have marked it as needed within a few days.";
 
   const matches = job.categoryLive
-    ? `At launch, ${job.matches} checked tradespeople nearby could take it. Work like this starts at about £${job.fromPrice} an hour.`
+    ? `At launch, ${job.matches} identity-verified tradespeople nearby could take it. Work like this starts at about £${job.fromPrice} an hour.`
     : "We are not covering that trade in your area yet. Telling us counts towards which trade we open next.";
 
   return {

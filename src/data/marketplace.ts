@@ -32,7 +32,15 @@ export type IconName =
   | "trend"
   | "check"
   | "calendar"
-  | "pin";
+  | "pin"
+  | "id"
+  | "clipboard"
+  | "document"
+  | "camera"
+  | "alert"
+  | "text-size"
+  | "sun"
+  | "contrast";
 
 export interface Category {
   id: string;
@@ -72,11 +80,6 @@ export interface Testimonial {
   rating: number;
   /** Unsplash portrait id. */
   avatar: string;
-}
-
-export interface Step {
-  title: string;
-  body: string;
 }
 
 /**
@@ -235,21 +238,6 @@ export const SEARCH_SUGGESTIONS: { id: string; label: string; categorySlug: stri
   { id: "s-18", label: "End of tenancy clean", categorySlug: "cleaning" },
 ];
 
-export const HOW_IT_WORKS: Step[] = [
-  {
-    title: "Describe the job",
-    body: "Speak it or type it in plain words. The AI turns it into a clear job post: category, urgency, and the details a tradesperson actually needs before quoting.",
-  },
-  {
-    title: "Get a shortlist",
-    body: "We rank verified tradespeople nearby by rating, distance and availability, then show you three good matches instead of ninety near-identical profiles.",
-  },
-  {
-    title: "Message and book",
-    body: "Agree a time in one thread, by voice or by text. No phone tag, no chasing quotes across five different websites.",
-  },
-];
-
 /**
  * Sample reviews.
  *
@@ -319,23 +307,5 @@ export const TESTIMONIALS: Testimonial[] = [
     service: "Electrical",
     rating: 5,
     avatar: PORTRAITS.youngMan,
-  },
-];
-
-export const TRUST_POINTS: { icon: IconName; title: string; body: string }[] = [
-  {
-    icon: "badge",
-    title: "Identity and DBS checked",
-    body: "Every tradesperson passes an ID check before they can take a single job, with an enhanced DBS check where the work involves vulnerable customers.",
-  },
-  {
-    icon: "shield",
-    title: "Trade bodies verified",
-    body: "Gas Safe for gas work, NICEIC or NAPIT for electrical. We check the public register directly rather than trusting a badge on a website.",
-  },
-  {
-    icon: "card",
-    title: "Insured work, protected payment",
-    body: "Public liability cover is confirmed on every profile, and payment is held until you confirm the job was done properly.",
   },
 ];

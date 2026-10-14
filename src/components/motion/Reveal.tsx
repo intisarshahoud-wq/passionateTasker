@@ -16,9 +16,14 @@ import type { ReactNode } from "react";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
+/*
+ * A fade with a short rise, played once. Kept inside the site's motion limits:
+ * 12px of travel at most, finished within 400ms. Anything bigger or slower
+ * starts to read as the page performing rather than the content arriving.
+ */
 export const revealUp: Variants = {
-  hidden: { opacity: 0, y: 14 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } },
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE } },
 };
 
 type RevealTag = "div" | "ul" | "li" | "article" | "figure";

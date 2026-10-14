@@ -3,9 +3,17 @@
 import { useRef } from "react";
 import { motion, useMotionValue, useSpring } from "motion/react";
 
+/**
+ * Makes its child drift slightly toward the pointer.
+ *
+ * `strength` is the full range of the drift in pixels, so the child moves at
+ * most half of it in any direction: the default of 8 is 4px each way, the most
+ * the site's motion limits allow for a hover. It does nothing on touch screens
+ * or when reduced motion is asked for.
+ */
 export function Magnetic({
   children,
-  strength = 14,
+  strength = 8,
   block = false,
 }: {
   children: React.ReactNode;

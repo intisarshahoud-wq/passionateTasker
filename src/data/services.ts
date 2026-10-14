@@ -216,7 +216,7 @@ export const SERVICE_CATEGORIES: ServiceCategory[] = [
     slug: "plumbing",
     name: "Plumbing",
     icon: "drop",
-    tagline: "Leaks, blockages and fittings sorted by checked, insured plumbers.",
+    tagline: "Leaks, blockages and fittings sorted by identity-verified, insured plumbers.",
     highlights: [
       "Leaks, drips and blockages found and fixed.",
       "Taps, toilets, showers and radiators repaired or replaced.",

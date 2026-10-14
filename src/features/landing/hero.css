@@ -170,6 +170,27 @@ section.hero {
 }
 
 .hero .eyebrow { margin-bottom: 20px; }
-@media (max-width: 520px) {
-  .hero .eyebrow { font-size: 0.68rem; padding: 6px 10px; }
+
+/*
+ * The positioning line above the headline. It is a whole sentence, not a
+ * label, so it is set in the body face at a size that can be read, and allowed
+ * to wrap onto a second line instead of shrinking to fit.
+ */
+.hero .hero-positioning {
+  display: flex;
+  align-items: flex-start;
+  width: fit-content;
+  /* Narrow enough that the sentence breaks into two even lines and the box
+     hugs them, instead of one long line and a stranded word. */
+  max-width: min(100%, 24rem);
+  text-wrap: balance;
+  padding: 8px 14px;
+  border-radius: 14px;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.4;
+  text-align: left;
 }
+.hero .hero-positioning .dot { flex-shrink: 0; margin-top: 0.5em; }

@@ -16,6 +16,7 @@
  */
 
 import type { ServiceCategory, SubService } from "./services";
+import { badgesFor } from "./trust";
 
 export interface Tasker {
   id: string;
@@ -54,14 +55,6 @@ function hash(text: string): number {
   return h;
 }
 
-function badgesFor(category: ServiceCategory): string[] {
-  const badges = ["ID checked", "Insured"];
-  if (category.slug === "plumbing" || category.slug === "electrical") {
-    badges.push("Trade registration checked");
-  }
-  return badges;
-}
-
 /** Three sample tradespeople for one job, shortlisted rather than a long list. */
 export function taskersFor(category: ServiceCategory, service: SubService): Tasker[] {
   const seed = hash(`${category.slug}/${service.slug}`);
@@ -84,7 +77,8 @@ export function taskersFor(category: ServiceCategory, service: SubService): Task
       yearsExperience: person.years,
       responseTime: person.response,
       bio: `${person.years} years of ${category.name.toLowerCase()} work. ${BIOS[(seed + i) % BIOS.length]}`,
-      badges: badgesFor(category),
+      // The same badge wording a real profile will carry (see data/trust.ts).
+      badges: badgesFor(category.slug),
     };
   });
 }

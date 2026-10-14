@@ -16,6 +16,8 @@
 @import "../features/assistant/assistant.css";
 @import "../features/services/services.css";
 @import "../features/booking/booking.css";
+@import "../features/info/info.css";
+@import "../styles/contrast.css";
 @import "../styles/interaction.css";
 
 :root {
@@ -72,6 +74,66 @@ html[data-mode="light"] {
     --accent-ink-on-accent: #1A140E;
     --line: #332C24;
     --focus: #E0975A;
+    color: var(--ink);
+  }
+}
+
+/*
+ * High contrast: the third display setting, beside larger text and light mode.
+ *
+ * Text is pure white on black (or black on white), well past the 7:1 that
+ * WCAG asks for at its strictest level. Borders stop being a faint hint and
+ * become lines you can see, because in this theme surfaces are the same colour
+ * as the page and it is the edge that says "this is a box". The copper moves to
+ * a shade with far more contrast, and the focus ring to the strongest colour
+ * available.
+ *
+ * It combines with light mode, so there are two palettes: white-on-black by
+ * default, black-on-white when light mode is also on. The second selector names
+ * both attributes so it outranks the two single-attribute blocks above.
+ */
+html[data-contrast="high"] {
+  --bg: #000000;
+  --surface: #000000;
+  --surface-2: #161616;
+  --ink: #FFFFFF;
+  --ink-soft: #F0F0F0;
+  --ink-faint: #D6D6D6;
+  --accent: #FFB35C;
+  --accent-text: #FFC98F;
+  --accent-ink-on-accent: #000000;
+  --line: #B8B8B8;
+  --focus: #FFE45C;
+  --media-scrim: #000000;
+}
+html[data-mode="light"][data-contrast="high"] {
+  --bg: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-2: #F0F0F0;
+  --ink: #000000;
+  --ink-soft: #1F1F1F;
+  --ink-faint: #3D3D3D;
+  --accent: #7A3B0E;
+  --accent-text: #6A3009;
+  --accent-ink-on-accent: #FFFFFF;
+  --line: #4A4A4A;
+  --focus: #000000;
+}
+/* Over the hero video the text stays white-on-black in both modes, as it does
+   in the ordinary themes (see above). */
+@media (min-width: 1025px) {
+  html[data-mode="light"][data-contrast="high"] .hero-content {
+    --bg: #000000;
+    --surface: #000000;
+    --surface-2: #161616;
+    --ink: #FFFFFF;
+    --ink-soft: #F0F0F0;
+    --ink-faint: #D6D6D6;
+    --accent: #FFB35C;
+    --accent-text: #FFC98F;
+    --accent-ink-on-accent: #000000;
+    --line: #B8B8B8;
+    --focus: #FFE45C;
     color: var(--ink);
   }
 }
@@ -220,18 +282,7 @@ nav.primary a::after {
 nav.primary a:hover { color: var(--ink); }
 nav.primary a:hover::after { transform: scaleX(1); transform-origin: left; }
 
-.a11y-toggles { display: flex; gap: 6px; align-items: center; }
-.a11y-btn {
-  display: flex; align-items: center; gap: 5px;
-  background: var(--surface); border: 1px solid var(--line); color: var(--ink-soft);
-  border-radius: 6px; padding: 6px 10px; font-size: 0.78rem; font-family: var(--font-mono);
-  cursor: pointer;
-  transition: color 200ms var(--ease), border-color 200ms var(--ease), transform 150ms var(--ease);
-}
-.a11y-btn:hover { color: var(--ink); border-color: var(--accent); transform: translateY(-1px); }
-.a11y-btn:active { transform: scale(0.94); }
-.a11y-btn[aria-pressed="true"] { color: var(--accent-text); border-color: var(--accent); }
-.a11y-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+/* The display settings (.a11y-btn and friends) are in components/layout/header.css. */
 
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
@@ -252,9 +303,14 @@ nav.primary a:hover::after { transform: scaleX(1); transform-origin: left; }
 .btn-outline { background: transparent; color: var(--ink); border-color: var(--line); }
 .btn-outline:hover { border-color: var(--accent); color: var(--accent-text); transform: translateY(-2px); }
 .btn-sm { padding: 9px 16px; font-size: 0.85rem; }
+/* On a phone a long label wraps onto a second line instead of pushing the page
+   wider than the screen, which it did in larger-text mode at 320px. */
+@media (max-width: 480px) {
+  .btn { white-space: normal; text-align: center; }
+}
 
-nav.primary { display: none; }
-@media (min-width: 860px) { nav.primary { display: flex; } }
+/* When the nav, the display settings and the menu button show is decided in
+   components/layout/header.css, by the width of the header in ems. */
 
 /* ---- Hero ---- */
 .hero { padding: 76px 0 60px; position: relative; overflow: hidden; }
@@ -423,7 +479,10 @@ section { padding: 64px 0; border-top: 1px solid var(--line); }
 .section-head p { color: var(--ink-soft); font-size: 1.02rem; margin: 0; }
 
 /* ---- How it works ---- */
-.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; counter-reset: step; }
+/* Five steps: one row on a wide screen, three then two on a tablet, a single
+   column on a phone. */
+.steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 24px; counter-reset: step; }
+@media (max-width: 1099px) { .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; } }
 @media (max-width: 780px) { .steps { grid-template-columns: 1fr; } }
 .step { position: relative; padding-top: 46px; }
 .step::before {
@@ -484,7 +543,7 @@ html[data-mode="light"] .trade-card::after { box-shadow: 0 18px 34px rgba(90, 70
   opacity: 0; transition: opacity 280ms var(--ease); pointer-events: none;
 }
 html[data-mode="light"] .pro-stat-card::after { box-shadow: 0 18px 34px rgba(90, 70, 50, 0.1); }
-.pro-stat-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+.pro-stat-card:hover { transform: translateY(-4px); border-color: var(--accent); }
 .pro-stat-card:hover::after { opacity: 1; }
 .pro-stat-card .big { font-family: var(--font-display); font-size: 2.4rem; color: var(--accent-text); font-variant-numeric: tabular-nums; }
 .pro-stat-card .label { color: var(--ink-soft); font-size: 0.9rem; margin-top: 4px; }
@@ -509,6 +568,10 @@ html[data-mode="light"] .pro-stat-card::after { box-shadow: 0 18px 34px rgba(90,
   transition: color 280ms var(--ease);
 }
 .role-toggle button[aria-pressed="true"] { color: var(--accent-ink-on-accent); }
+/* Two long labels side by side. On a narrow phone with larger text they were
+   wider than the screen: let them shrink, and give up padding before width. */
+.role-toggle button { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 400px) { .role-toggle button { padding: 9px 6px; } }
 form.waitlist-form { display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
 .field-row { display: flex; gap: 10px; }
 @media (max-width: 520px) { .field-row { flex-direction: column; } }
@@ -536,3 +599,23 @@ footer.site {
 .footer-links a:hover { color: var(--accent-text); }
 .footer-tagline { color: var(--ink-faint); font-size: 0.85rem; margin-top: 6px; max-width: 40ch; }
 .footer-copy { color: var(--ink-faint); font-size: 0.8rem; margin-top: 28px; }
+
+/*
+ * Reduced motion, for the buttons and cards styled in this file.
+ *
+ * The rule near the top of this file removes the animation of a move, but the
+ * element would still jump to its lifted position on hover, just instantly.
+ * So with reduced motion asked for, these do not move at all. The matching
+ * list for the component stylesheets is in styles/interaction.css; these are
+ * here because this file loads after that one, and the later rule wins.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .btn:active,
+  .btn-primary:hover,
+  .btn-outline:hover,
+  .pro-stat-card:hover {
+    transform: none;
+  }
+  /* The light that sweeps across a primary button on hover is movement too. */
+  .btn-primary::after { display: none; }
+}

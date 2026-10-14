@@ -20,7 +20,8 @@ export function ServicesIndex() {
           <h1 className="svc-index__title">All services</h1>
           <p>
             Choose a service to see every job in it, with a starting price for each. Every
-            tradesperson is ID-checked and insured before they can take work.
+            tradesperson has their identity verified and their insurance checked before they
+            can take a job.
           </p>
         </div>
 

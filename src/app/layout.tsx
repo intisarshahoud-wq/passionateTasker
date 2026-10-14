@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Jost, Geist, Geist_Mono } from "next/font/google";
+import { HOME_TITLE, SITE_URL } from "@/lib/seo";
+import { SITE } from "@/lib/site";
 import "./globals.css";
 
 /*
@@ -31,31 +33,52 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
+/*
+ * Defaults for every page. A page sets its own title, description and
+ * canonical address with pageMetadata() in lib/seo.ts; the template below adds
+ * the brand after the page's title. metadataBase is what turns a path such as
+ * "/trust" into a full address in canonical links and share cards.
+ *
+ * No canonical address here on purpose: a page that forgot to set its own
+ * would inherit this one and tell search engines it is the home page.
+ */
 export const metadata: Metadata = {
-  title: "Passionate Taskers — Tell us what needs fixing",
-  description:
-    "Describe the job in your own words, by voice or text. We turn it into a proper job post and match you with verified, insured tradespeople near you.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: HOME_TITLE,
+    template: `%s | ${SITE.name}`,
+  },
+  description: SITE.description,
+  applicationName: SITE.name,
+  openGraph: {
+    siteName: SITE.name,
+    locale: "en_GB",
+    type: "website",
+  },
 };
+
+/*
+ * Applies the saved display preferences before first paint. Without this, a
+ * visitor who needs light mode, larger text or high contrast gets a flash of
+ * the dark, small-text default on every page load — which is worst for exactly
+ * the people the preferences exist to help.
+ *
+ * Contrast follows the device when the visitor has not chosen here: someone
+ * whose system asks for more contrast gets the high-contrast theme without
+ * having to find the button. The same logic is in lib/display-prefs.ts; keep
+ * the two in step.
+ */
+const DISPLAY_PREFS_SCRIPT = `(function(){var r=document.documentElement,m=null,t=null,c=null;try{m=localStorage.getItem('pt-mode');t=localStorage.getItem('pt-text');c=localStorage.getItem('pt-contrast');}catch(e){}if(c!=='high'&&c!=='normal'){try{c=window.matchMedia('(prefers-contrast: more)').matches?'high':'normal';}catch(e){c='normal';}}r.setAttribute('data-mode',m==='light'?'light':'dark');r.setAttribute('data-text',t==='lg'?'lg':'normal');r.setAttribute('data-contrast',c);})();`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
+      lang={SITE.lang}
       className={`${jost.variable} ${geist.variable} ${geistMono.variable}`}
       suppressHydrationWarning
     >
       <head>
-        {/*
-         * Applies the saved display preferences before first paint. Without
-         * this, a visitor who needs light mode or larger text gets a flash of
-         * the dark, small-text default on every page load — which is worst for
-         * exactly the people the preference exists to help.
-         */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){try{var r=document.documentElement;var m=localStorage.getItem('pt-mode');var t=localStorage.getItem('pt-text');r.setAttribute('data-mode',m==='light'?'light':'dark');r.setAttribute('data-text',t==='lg'?'lg':'normal');}catch(e){}})();`,
-          }}
-        />
+        <script dangerouslySetInnerHTML={{ __html: DISPLAY_PREFS_SCRIPT }} />
       </head>
       <body>{children}</body>
     </html>
