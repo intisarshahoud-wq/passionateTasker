@@ -1,0 +1,16 @@
+{
+  "name": "passionate-taskers-checks",
+  "private": true,
+  "description": "Browser checks for the Passionate Taskers site. Not part of the app.",
+  "scripts": {
+    "contrast": "node hero-contrast-check.js",
+    "e2e": "node e2e-services.js",
+    "pages": "node e2e-pages.js",
+    "playlist": "node verify-playlist.js",
+    "voice": "node verify-voice-booking.js"
+  },
+  "dependencies": {
+    "axe-core": "^4.13.0",
+    "playwright-core": "^1.63.0"
+  }
+}

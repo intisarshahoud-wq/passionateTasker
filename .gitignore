@@ -44,4 +44,10 @@ next-env.d.ts
 CLAUDE.md
 AGENTS.md
 .mcp.json
-.claude/
+
+# .claude/ is committed (plans, milestones, skills, browser checks).
+# Only what its checks generate, and local settings, stay out.
+.claude/tools/node_modules/
+.claude/tools/*.png
+.claude/tools/voice-booking-transcript.txt
+.claude/settings.local.json
